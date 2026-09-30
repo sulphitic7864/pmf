@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.gradient-text {
+    background: linear-gradient(0deg, rgba(1,248,223,1) 16%, rgba(1,227,222,1) 30%, rgba(0,177,219,1) 48%, rgba(0,177,219,1) 64%, rgba(0,177,219,1) 73%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+*::selection{
+  background-color: #0095EB;
+  color: white;
+}
+
+h1::selection{
+  color:#0095EB
+}
