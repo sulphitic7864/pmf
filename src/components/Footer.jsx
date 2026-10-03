@@ -4,6 +4,7 @@ import { BiNavigation } from "react-icons/bi";
 import { MdEmail } from "react-icons/md";
 import { FaFacebookF } from "react-icons/fa";
 import { BsInstagram } from "react-icons/bs";
+import { SiTiktok } from "react-icons/si";
 import { TfiYoutube } from "react-icons/tfi";
 
 const Footer = () => {
@@ -13,7 +14,7 @@ const Footer = () => {
       <div className="w-full h-full flex flex-col items-center md:items-start justify-between pt-10">
         <img src={images.logo} alt="logo" className="w-16" />
         <h1 className="text-white text-sm">
-          &copy; 2021 Place My Films. All Rights Reserved
+          &copy; {new Date().getFullYear()} Place My Films. All Rights Reserved
         </h1>
       </div>
 
@@ -34,7 +35,7 @@ const Footer = () => {
       {/* Links and Social Media Section */}
       <div className="flex flex-col justify-between items-center md:items-end pt-12">
         <div className="flex flex-wrap md:flex-nowrap md:justify-end gap-4 md:w-2/3">
-          {["Home", ["About", "Us"], "Pricing", "Blog", ["Contact", "Us"]].map(
+          {["Home", ["About", "Us"], "Contest", "Blog", ["Contact", "Us"]].map(
             (route, index) => (
               <a
                 key={index}
@@ -84,6 +85,13 @@ const Footer = () => {
                 "https://www.instagram.com/placemyfilms/",
                 "_blank"
               )
+            }
+          />
+          <SiTiktok
+            size={20}
+            className="text-white cursor-pointer hover:text-gray-400 transition-colors"
+            onClick={() =>
+              window.open("https://www.tiktok.com/@placemyfilms", "_blank")
             }
           />
           <TfiYoutube

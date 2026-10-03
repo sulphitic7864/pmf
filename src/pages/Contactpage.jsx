@@ -167,47 +167,47 @@ const Contactpage = () => {
 
     return (
         <>
-            <div className='w-full min-h-screen'>
+            <div className='w-full min-h-screen bg-black'>
                 <div className='w-full h-[calc(50vh-106px)] relative bg-contact-banner bg-cover bg-center'>
                     <div className='absolute flex items-center pl-10 md:pl-24 w-full h-full z-50 top-0 left-0 bg-[rgba(0,0,0,0.5)]'>
                         <h1 className='text-5xl md:text-[3.5rem] font-bold gradient-text'>Contact Us</h1>
                     </div>
                 </div>
-                <div className='w-full h-screen bg-black px-10 sm:px-20 md:px-28 lg:px-48 pt-8'>
+                <div className='w-full min-h-screen bg-black px-5 sm:px-10 md:px-28 lg:px-48 pt-8 pb-12'>
                     <h1 className='text-3xl gradient-text font-semibold'>For a zoom meeting contact us here...!</h1>
-                    <p className='mt-10 mb-5 gradient-text'>Send us a message using our form below. We will get back to you within 24 hours. Thanks for visiting Place My Films!</p>
+                    <p className='mt-5 mb-6 gradient-text'>Send us a message using our form below. We will get back to you within 24 hours. Thanks for visiting Place My Films!</p>
                     <form>
-                        <div className='w-full h-screen bg-black flex flex-col gap-4'>
-                            <div className='flex gap-5'>
-                                <div className='w-1/2'>
+                        <div className='w-full max-w-5xl flex flex-col gap-4 text-white'>
+                            <div className='flex flex-col sm:flex-row gap-4 sm:gap-5'>
+                                <div className='w-full sm:w-1/2'>
                                     <input 
                                         type="text" 
                                         name='firstName' 
                                         value={contactData.firstName}
                                         placeholder='First Name' 
-                                        className='w-full bg-white border-b-2 border-white p-2 text-sky-600 focus:outline-none focus:bg-sky-100' 
+                                        className='w-full rounded-md border border-white/10 bg-[#333] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
                                         onChange={handleContactChange}
                                     />
                                     {error.firstName && <p className='text-red-500'>{error.firstName}</p>}
                                 </div>
-                                <div className='w-1/2'>
+                                <div className='w-full sm:w-1/2'>
                                     <input 
                                         type="text" 
                                         name='lastName' 
                                         value={contactData.lastName}
                                         placeholder='Last Name' 
-                                        className='w-full bg-white border-b-2 border-white p-2 text-sky-600 focus:outline-none focus:bg-sky-100' 
+                                        className='w-full rounded-md border border-white/10 bg-[#333] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
                                         onChange={handleContactChange}
                                     />
                                     {error.lastName && <p className='text-red-500'>{error.lastName}</p>}
                                 </div>
                             </div>
                             <div className='w-full flex gap-2'>
-                                <div className='w-1/4'>
+                                <div className='w-2/5 sm:w-1/4'>
                                     <select
                                         name='countryCode'
                                         value={contactData.countryCode}
-                                        className='w-full bg-white border-b-2 border-white p-2 text-sky-600 focus:outline-none focus:bg-sky-100'
+                                        className='w-full rounded-md border border-white/10 bg-[#333] p-3 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400'
                                         onChange={handleContactChange}
                                     >
                                         {countries.map((country) => (
@@ -217,13 +217,13 @@ const Contactpage = () => {
                                         ))}
                                     </select>
                                 </div>
-                                <div className='w-3/4'>
+                                <div className='w-3/5 sm:w-3/4'>
                                     <input 
                                         type="number" 
                                         name='phoneNumber' 
                                         value={contactData.phoneNumber}
                                         placeholder='Phone Number' 
-                                        className='w-full bg-white border-b-2 border-white p-2 text-sky-600 focus:outline-none focus:bg-sky-100' 
+                                        className='w-full rounded-md border border-white/10 bg-[#333] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
                                         onChange={handleContactChange}
                                     />
                                     {error.phoneNumber && <p className='text-red-500'>{error.phoneNumber}</p>}
@@ -235,7 +235,7 @@ const Contactpage = () => {
                                     name='email' 
                                     value={contactData.email}
                                     placeholder='Email' 
-                                    className='w-full bg-white border-b-2 border-white p-2 text-sky-600 focus:outline-none focus:bg-sky-100' 
+                                    className='w-full rounded-md border border-white/10 bg-[#333] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 read-only:cursor-not-allowed read-only:opacity-70' 
                                     onChange={handleContactChange}
                                     readOnly={!!contactData.email}
                                 />
@@ -243,11 +243,11 @@ const Contactpage = () => {
                             </div>
                             <div className='w-full'>
                                 <textarea 
-                                    rows={10} 
+                                    rows={6} 
                                     name='message' 
                                     value={contactData.message}
                                     placeholder='Questions & Comments' 
-                                    className='w-full h-auto bg-white white-b-2 border-white p-2 text-sky-600 focus:outline-none focus:bg-sky-100' 
+                                    className='w-full resize-y rounded-md border border-white/10 bg-[#333] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
                                     onChange={handleContactChange}
                                 />
                                 {error.message && <p className='text-red-500'>{error.message}</p>}
@@ -261,7 +261,7 @@ const Contactpage = () => {
                                 {error.recaptcha && <p className='text-red-500'>{error.recaptcha}</p>}
                             </div>
                             <div className='w-full'>
-                                <button className='bg-custom-100 rounded-lg text-white p-2 w-32' onClick={handleSubmit}>Submit</button>
+                                <button className='w-full sm:w-auto min-w-40 rounded-sm bg-gradient-to-b from-sky-500 to-[#00D0B8] px-6 py-3 text-sm uppercase text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-black' onClick={handleSubmit}>Submit</button>
                             </div>
                         </div>
                     </form>

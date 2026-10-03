@@ -56,14 +56,14 @@ const Pricingpage = () => {
           whileInView={{ opacity: 1,y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }} 
-          className='text-6xl scale-y-[0.8] text-center pt-24 gradient-text h-44'>Our Packages
+          className='text-6xl scale-y-[0.8] text-center pt-24 gradient-text h-44'>Film Festival
         </motion.h1>
         <motion.p
           initial={{ opacity: 0,y : 20 }}
           whileInView={{ opacity: 1,y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4,delay:0.1 }} 
-          className='text-white text-center pt-3 text-2xl'>Success starts here…  {packagedetail?.message}</motion.p>
+          className='text-white text-center pt-3 text-2xl'>Where Films Compete. Stories Win.</motion.p>
         <div className='grid lg:grid-cols-2 pt-16 px-5 w-full h-auto gap-6'>
           {
             loading ? 

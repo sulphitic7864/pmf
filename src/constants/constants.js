@@ -17,12 +17,12 @@ export const cardDetails = [
     {
         image: images.upload,
         title: '1. upload',
-        text: "Choose your plan and upload your film to the Place My Film's network."
+        text: "Upload your film for free."
     },
     {
         image: images.review,
         title: '2. review',
-        text: 'Give at least 72 hrs for someone to contact you.'
+        text: 'Give at least 72 hrs for review process.'
     },
     {
         image: images.approval,

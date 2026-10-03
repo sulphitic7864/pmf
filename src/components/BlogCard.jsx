@@ -201,24 +201,25 @@ const BlogCard = ({ selectedCategory, selectedAuthor }) => {
 
   if (loading) {
     return (
-      <div className="w-full h-32 flex items-center justify-center">
-        <p className="text-white">Loading blogs...</p>
+      <div className="col-span-full flex min-h-48 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]">
+        <p className="text-sm text-gray-400">Loading stories...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="w-full h-32 flex items-center justify-center">
-        <p className="text-white bg-red-500 p-4 rounded">{error}</p>
+      <div className="col-span-full flex min-h-48 items-center justify-center rounded-xl border border-red-400/20 bg-red-400/5 p-6">
+        <p className="text-sm text-red-300">{error}</p>
       </div>
     );
   }
 
   if (filteredBlogs.length === 0) {
     return (
-      <div className="w-full h-32 flex items-center justify-center">
-        <p className="text-white">No blogs found for selected filters</p>
+      <div className="col-span-full flex min-h-48 flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-6 text-center">
+        <p className="text-lg font-medium text-white">No stories found</p>
+        <p className="mt-2 text-sm text-gray-400">Try another category or author filter.</p>
       </div>
     );
   }
@@ -226,13 +227,16 @@ const BlogCard = ({ selectedCategory, selectedAuthor }) => {
   return (
     <>
       {filteredBlogs.map((blog) => (
-        <div key={blog.id} className="w-full h-auto border-2 border-white p-5">
-          <div className="flex gap-3">
-            <p className="text-white flex items-center gap-1">
-              <IoMdPerson />
-              {blog.author}
+        <article key={blog.id} className="group relative flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111416] p-4 shadow-lg shadow-black/20 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-400/50 hover:shadow-xl hover:shadow-cyan-950/30 sm:p-5">
+          <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-sky-500 via-cyan-300 to-emerald-300 opacity-50 transition-opacity duration-300 group-hover:opacity-100" />
+          <div className="flex min-w-0 items-center justify-between gap-3 text-xs text-gray-400">
+            <p className="flex min-w-0 items-center gap-2 truncate text-gray-200">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-400/10 text-cyan-300">
+                <IoMdPerson />
+              </span>
+              <span className="truncate">{blog.author}</span>
             </p>
-            <p className="text-white">
+            <p className="shrink-0 text-right">
               {new Date(blog.createdAt).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
@@ -242,11 +246,11 @@ const BlogCard = ({ selectedCategory, selectedAuthor }) => {
           </div>
 
           {blog.imageURL && (
-            <div className="pt-4">
+            <div className="mt-4 overflow-hidden rounded-lg bg-white/5">
               <img 
                 src={blog.imageURL} 
                 alt={blog.title} 
-                className="w-full h-48 object-cover rounded"
+                className="aspect-[16/10] w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.style.display = 'none';
@@ -257,68 +261,61 @@ const BlogCard = ({ selectedCategory, selectedAuthor }) => {
 
           <h2 
             onClick={() => handleNavigation(blog.id)}
-            className="text-4xl text-white uppercase underline pt-2 break-words cursor-pointer hover:text-gray-300 transition-colors"
+            className="mt-4 cursor-pointer break-words text-2xl font-semibold leading-tight text-white transition-colors duration-200 group-hover:text-cyan-200 sm:text-[1.7rem]"
           >
             {blog.title}
           </h2>
           
-          <div className="pt-4 max-h-32 overflow-y-auto">
-            <p className="text-white leading-7 break-words whitespace-pre-wrap">
+          <div className="mt-3 min-h-16 flex-1">
+            <p className="line-clamp-3 break-words whitespace-pre-wrap text-sm leading-6 text-gray-400">
               {blog.description}
             </p>
           </div>
 
-          <div className="flex justify-between pt-6">
+          <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
             <div className="flex items-center gap-4">
               {/* Like section */}
               <div className="flex items-center gap-2">
                 {userId ? (
                   userLikes[blog.id] ? (
-                    <BiSolidHeart 
-                      size={25} 
-                      className="text-red-500 cursor-pointer hover:text-red-400 transition-colors"
-                      onClick={() => handleLike(blog.id)}
-                    />
+                    <button type="button" aria-label="Unlike story" onClick={() => handleLike(blog.id)} className="text-red-400 transition-transform hover:scale-110 hover:text-red-300">
+                      <BiSolidHeart size={22} />
+                    </button>
                   ) : (
-                    <BiHeart 
-                      size={25} 
-                      className="text-white cursor-pointer hover:text-red-500 transition-colors"
-                      onClick={() => handleLike(blog.id)}
-                    />
+                    <button type="button" aria-label="Like story" onClick={() => handleLike(blog.id)} className="text-gray-300 transition-all hover:scale-110 hover:text-rose-400">
+                      <BiHeart size={22} />
+                    </button>
                   )
                 ) : (
-                  <BiHeart 
-                    size={25} 
-                    className="text-white cursor-pointer hover:text-red-500 transition-colors"
-                    onClick={() => navigate('/blog')}
-                  />
+                  <button type="button" aria-label="Like story" onClick={() => navigate('/blog')} className="text-gray-300 transition-all hover:scale-110 hover:text-rose-400">
+                    <BiHeart size={22} />
+                  </button>
                 )}
-                <span className="text-white">
+                <span className="text-sm text-gray-300">
                   {likeCounts[blog.id] || 0}
                 </span>
               </div>
             </div>
             
-            <div className="flex gap-3">
-              <div 
-                className="flex items-center gap-1 cursor-pointer group"
+            <button
+                type="button"
+                className="flex items-center gap-1.5 text-sm font-medium text-cyan-300 transition-colors hover:text-cyan-100"
                 onClick={() => handleNavigation(blog.id)}
               >
-                <BiNote size={25} className="text-white group-hover:text-gray-300 transition-colors" />
-                <p className="text-white underline group-hover:text-gray-300 transition-colors">Read more</p>
-              </div>
-            </div>
+                <BiNote size={18} />
+                Read story <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">&rarr;</span>
+              </button>
           </div>
 
-          <div className="flex gap-2 pt-3">
-            <span className="text-white bg-gray-800 px-2 py-1 rounded text-sm">
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs capitalize text-cyan-200">
               {blog.type}
             </span>
-            <span className="text-white bg-gray-800 px-2 py-1 rounded text-sm">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-gray-400">
               {readCounts[blog.id] || 0} readers
             </span>
           </div>
-        </div>
+        </article>
       ))}
     </>
   );

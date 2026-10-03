@@ -28,7 +28,7 @@ const App = () => {
         <Routes>
             <Route path="/" element={<Template><Homepage/></Template>} />
             <Route path="/about" element={<Template><Aboutpage/></Template>} />
-            <Route path="/pricing" element={<Template><Pricingpage/></Template>} />
+            <Route path="/contest" element={<Template><Pricingpage/></Template>} />
             <Route path="/product/:packageid" element={<Template><PackageProducts/></Template>} />
             <Route path="/blog" element={<Template><Blogpage/></Template>} />
             <Route path="/blog/view/:id" element={<Template><BlogView/></Template>}/>

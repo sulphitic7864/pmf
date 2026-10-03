@@ -40,8 +40,8 @@ const Homepage = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 1 }}
                     >
-                    <Link to={'/pricing'} className='hover:scale-90 transtion-all duration-300 w-max '>
-                        <Button title='SUBMIT YOUR FILM REVIEW' textCol='white' fontsize={16} extraclass={'tracking-[0.1px] scale-y-[0.9] py-[10px] hover:bg-gradient-to-tr '}/>
+                    <Link to={'/my-account/'} className='hover:scale-90 transtion-all duration-300 w-max '>
+                        <Button title='SUBMIT YOUR FILM' textCol='white' fontsize={16} extraclass={'tracking-[0.1px] scale-y-[0.9] py-[10px] hover:bg-gradient-to-tr '}/>
                     </Link>
                 </motion.div>
             </motion.div>
@@ -77,10 +77,10 @@ const Homepage = () => {
             transition={{ duration: 1 }}
             className='mt-10'
         >
-            <Link to={'/pricing'}
+            <Link to={'/my-account/'}
                 className='hover:scale-90 transition-all duration-500 w-max'
             >
-            <Button title='PRICING & OPTIONS' fontsize={15} extraclass={'py-4 text-white scale-y-105 hover:bg-gradient-to-tr '} />
+            <Button title='SUBMIT FILM' fontsize={15} extraclass={'py-4 text-white scale-y-105 hover:bg-gradient-to-tr '} />
             </Link>
         </motion.div>
     </div>

@@ -8,8 +8,11 @@ import { jwtDecode } from 'jwt-decode';
 
 const initialLoginData = {loginemail: '', loginpassword: ''}
 const initialSignupData = {signupemail: '', username: '', firstName: '', lastName: ''}
+const inputClassName = 'w-full rounded-md border border-white/10 bg-[#242829] px-4 py-3 text-white placeholder:text-gray-500 transition focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400'
+const submitButtonClassName = 'w-full rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-5 py-3 text-sm font-semibold uppercase text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:cursor-wait disabled:opacity-60'
 
 const LoginAndSignUp = () => {
+    const [authMode, setAuthMode] = useState('login');
     const [loginData, setLoginData] = useState(initialLoginData);
     const [signupData, setSignupData] = useState(initialSignupData);
     const [showPassword, setShowPassword] = useState(false);
@@ -140,6 +143,7 @@ const LoginAndSignUp = () => {
                 
                 toast.success('Registration successful! Login details sent to your email.');
                 setSignupData(initialSignupData);
+                setAuthMode('login');
             }
         } catch(error) {
             toast.error(error.response?.data?.error || 'Registration failed');
@@ -149,156 +153,119 @@ const LoginAndSignUp = () => {
     }
 
     return (
-        <>
-        <div className='min-h-screen px-5 sm:px-20 md:px-32 lg:px-44 py-10 w-full bg-black'>
-            <h1 className='text-4xl text-white'>Account</h1>
-            <div className='flex items-center text-white justify-center mt-10'>
-                <div className='w-full max-w-6xl flex flex-col md:flex-row'>
-                    <div className='w-full md:w-1/2 flex flex-col p-8 rounded-l-lg md:border-r-[1px] border-solid border-gray-600 '>
-                        <h2 className='text-2xl font-bold mb-6'>Login</h2>
-                        <form>
-                            <div className='mb-4'>
-                                <label className='block text-white text-sm font-bold mb-2' htmlFor='loginemail'>
-                                    Username or Email Address
-                                </label>
-                                <input
-                                    className='appearance-none bg-[#333] border-none rounded-md w-full py-3 px-3 text-white leading-tight focus:outline-none focus:shadow-outline'
-                                    id='loginemail'
-                                    type='text'
-                                    value={loginData.loginemail}
-                                    onChange={handleLoginChange}
-                                    />
-                            </div>
-                            <div className='mb-6'>
-                                <label className='block text-white text-sm font-bold mb-2' htmlFor='loginpassword'>
-                                    Password
-                                </label>
-                                <div className='relative'>
+        <main className='min-h-screen w-full bg-black px-5 py-10 text-white sm:px-8'>
+            <div className='mx-auto max-w-xl'>
+                <p className='mb-3 text-sm font-semibold uppercase text-cyan-400'>Place My Films</p>
+                <h1 className='text-3xl font-semibold sm:text-4xl'>
+                    {authMode === 'login' ? 'Welcome back' : 'Create your account'}
+                </h1>
+                <p className='mt-2 text-sm text-gray-400'>
+                    {authMode === 'login' ? 'Log in to continue to your account.' : 'Join Place My Films to share your work.'}
+                </p>
+
+                <section className='mt-8 rounded-xl border border-white/10 bg-[#101314] p-5 shadow-xl shadow-black/30 sm:p-8'>
+                    {authMode === 'login' ? (
+                        <>
+                            <h2 className='mb-6 text-2xl font-semibold'>Login</h2>
+                            <form onSubmit={handleLogin}>
+                                <div className='mb-5'>
+                                    <label className='mb-2 block text-sm font-medium text-gray-200' htmlFor='loginemail'>
+                                        Username or Email Address
+                                    </label>
                                     <input
-                                        className='appearance-none bg-[#333] border-none rounded-md w-full py-3 px-3 text-white leading-tight focus:outline-none focus:shadow-outline'
-                                        id='loginpassword'
-                                        type={showPassword ? 'text' : 'password'}
-                                        value={loginData.loginpassword}
+                                        className={inputClassName}
+                                        id='loginemail'
+                                        type='text'
+                                        autoComplete='username'
+                                        value={loginData.loginemail}
                                         onChange={handleLoginChange}
-                                        />
-                                    <button
-                                        type='button'
-                                        className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500'
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        >
-                                        {showPassword ? "🙈" : "👁️"}
-                                    </button>
-                                </div>
-                            </div>
-                            <div className='mb-6'>
-                                <label className='inline-flex items-center'>
-                                    <input
-                                        type='checkbox'
-                                        className='form-checkbox text-sky-500'
-                                        />
-                                    <span className='ml-2 text-white'>Remember Me</span>
-                                </label>
-                            </div>
-                            <div className='flex items-center justify-between'>
-                                <button
-                                    className='group h-auto py-3 flex items-center hover:text-gray-500 justify-center w-full relative px-5 text-sm border-none rounded-sm text-white uppercase bg-gradient-to-b from-sky-500 to-[#00D0B8] overflow-hidden'
-                                    type='button'
-                                    onClick={handleLogin}
-                                    disabled={loading}
-                                    >
-                                        <p className='z-50 w-max relative'>{loading ? 'Processing...' : 'Login'}</p>
-                                        <div className='w-0 h-full top-0 left-0 absolute bg-white z-20 transition-all duration-300 group-hover:w-full'></div>
-                                </button>
-                            </div>
-                                <Link to={"/my-account/lost-password/"} className='text-white w-full text-center cursor-pointer mt-2 underline'><p>Lost your password?</p></Link>
-                        </form>
-                    </div>
-                    <div className='w-full md:w-1/2 p-8 rounded-r-lg '>
-                        <h2 className='text-2xl font-bold mb-6'>Sign Up</h2>
-                        <form>
-                            <div className='flex gap-2 w-full mb-4'>
-                                <div className='flex flex-col w-1/2 gap-2'>
-                                    <label className='block text-white text-sm font-bold mb-2' htmlFor='firstName'>
-                                        First Name *
-                                    </label>
-                                    <input
-                                        className='appearance-none bg-[#333] border-none rounded-md w-full py-3 px-3 text-white leading-tight focus:outline-none focus:shadow-outline'
-                                        id='firstName'
-                                        type='text'
-                                        value={signupData.firstName}
-                                        onChange={handleSignupChange}
-                                        />
-                                </div>
-                                <div className='flex flex-col w-1/2 gap-2'>
-                                    <label className='block text-white text-sm font-bold mb-2' htmlFor='lastName'>
-                                        Last Name *
-                                    </label>
-                                    <input
-                                        className='appearance-none bg-[#333] border-none rounded-md w-full py-3 px-3 text-white leading-tight focus:outline-none focus:shadow-outline'
-                                        id='lastName'
-                                        type='text'
-                                        value={signupData.lastName}
-                                        onChange={handleSignupChange}
-                                        />
-                                </div>
-                            </div>
-                            <div className='mb-4'>
-                                <label className='block text-white text-sm font-bold mb-2' htmlFor='username'>
-                                    Username *
-                                </label>
-                                <input
-                                    className='appearance-none bg-[#333] border-none rounded-md w-full py-3 px-3 text-white leading-tight focus:outline-none focus:shadow-outline'
-                                    id='username'
-                                    type='text'
-                                    value={signupData.username}
-                                    onChange={handleSignupChange}
                                     />
-                            </div>
-                            <div className='mb-4'>
-                                <label className='block text-white text-sm font-bold mb-2' htmlFor='signupemail'>
-                                    Email Address *
-                                </label>
-                                <input
-                                    className='appearance-none bg-[#333] border-none rounded-md w-full py-3 px-3 text-white leading-tight focus:outline-none focus:shadow-outline'
-                                    id='signupemail'
-                                    type='email'
-                                    value={signupData.signupemail}
-                                    onChange={handleSignupChange}
-                                    />
-                            </div>
-                            <div>
-                                <p className='text-center text-white'>
-                                    A link to set a new password will be sent to your email address.
-                                </p>
-                            </div>
-                            <div className='flex items-center justify-center'>
-                                <div className='mb-6'>
-                                    <label className='inline-flex items-center'>
+                                </div>
+                                <div className='mb-5'>
+                                    <label className='mb-2 block text-sm font-medium text-gray-200' htmlFor='loginpassword'>
+                                        Password
+                                    </label>
+                                    <div className='relative'>
                                         <input
-                                            type='checkbox'
-                                            className='form-checkbox text-sky-500'
+                                            className={`${inputClassName} pr-12`}
+                                            id='loginpassword'
+                                            type={showPassword ? 'text' : 'password'}
+                                            autoComplete='current-password'
+                                            value={loginData.loginpassword}
+                                            onChange={handleLoginChange}
                                         />
-                                        <span className='ml-2 text-white'>Yes, add me to your mailing list</span>
-                                    </label>
+                                        <button
+                                            type='button'
+                                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                            className='absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 transition-colors hover:text-cyan-300'
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? '🙈' : '👁️'}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className='flex items-center justify-between'>
-                                <button
-                                    className='group h-auto py-3 flex items-center hover:text-gray-500 justify-center w-full relative px-5 text-sm border-none rounded-sm text-white uppercase bg-gradient-to-b from-sky-500 to-[#00D0B8] overflow-hidden'
-                                    type='button'
-                                    onClick={handleSignup}
-                                    disabled={loading}
-                                    >
-                                   <p className='z-50 w-max relative'>{loading ? 'Processing...' : 'Register'}</p>
-                                    <div className='w-0 h-full top-0 left-0 absolute bg-white z-20 transition-all duration-300 group-hover:w-full'></div>
+                                <div className='mb-6 flex items-center justify-between gap-4 text-sm'>
+                                    <label className='inline-flex items-center text-gray-300'>
+                                        <input type='checkbox' className='form-checkbox text-sky-500' />
+                                        <span className='ml-2'>Remember Me</span>
+                                    </label>
+                                    <Link to='/my-account/lost-password/' className='text-cyan-300 transition-colors hover:text-cyan-100'>
+                                        Forgot password?
+                                    </Link>
+                                </div>
+                                <button className={submitButtonClassName} type='submit' disabled={loading}>
+                                    {loading ? 'Processing...' : 'Login'}
                                 </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                            </form>
+                            <p className='mt-6 text-center text-sm text-gray-400'>
+                                New to Place My Films?{' '}
+                                <button type='button' onClick={() => setAuthMode('register')} className='font-semibold text-cyan-300 transition-colors hover:text-cyan-100'>
+                                    Create an account
+                                </button>
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <h2 className='mb-6 text-2xl font-semibold'>Register</h2>
+                            <form onSubmit={handleSignup}>
+                                <div className='mb-4 flex flex-col gap-4 sm:flex-row'>
+                                    <div className='w-full sm:w-1/2'>
+                                        <label className='mb-2 block text-sm font-medium text-gray-200' htmlFor='firstName'>First Name *</label>
+                                        <input className={inputClassName} id='firstName' type='text' autoComplete='given-name' value={signupData.firstName} onChange={handleSignupChange} />
+                                    </div>
+                                    <div className='w-full sm:w-1/2'>
+                                        <label className='mb-2 block text-sm font-medium text-gray-200' htmlFor='lastName'>Last Name *</label>
+                                        <input className={inputClassName} id='lastName' type='text' autoComplete='family-name' value={signupData.lastName} onChange={handleSignupChange} />
+                                    </div>
+                                </div>
+                                <div className='mb-4'>
+                                    <label className='mb-2 block text-sm font-medium text-gray-200' htmlFor='username'>Username *</label>
+                                    <input className={inputClassName} id='username' type='text' autoComplete='username' value={signupData.username} onChange={handleSignupChange} />
+                                </div>
+                                <div className='mb-4'>
+                                    <label className='mb-2 block text-sm font-medium text-gray-200' htmlFor='signupemail'>Email Address *</label>
+                                    <input className={inputClassName} id='signupemail' type='email' autoComplete='email' value={signupData.signupemail} onChange={handleSignupChange} />
+                                </div>
+                                <p className='mb-5 text-sm leading-6 text-gray-400'>A link to set a new password will be sent to your email address.</p>
+                                <label className='mb-6 flex items-start text-sm text-gray-300'>
+                                    <input type='checkbox' className='form-checkbox mt-1 text-sky-500' />
+                                    <span className='ml-2'>Yes, add me to your mailing list</span>
+                                </label>
+                                <button className={submitButtonClassName} type='submit' disabled={loading}>
+                                    {loading ? 'Processing...' : 'Register'}
+                                </button>
+                            </form>
+                            <p className='mt-6 text-center text-sm text-gray-400'>
+                                Already have an account?{' '}
+                                <button type='button' onClick={() => setAuthMode('login')} className='font-semibold text-cyan-300 transition-colors hover:text-cyan-100'>
+                                    Log in
+                                </button>
+                            </p>
+                        </>
+                    )}
+                </section>
             </div>
-        </div>
-        </>
+        </main>
     )
 }
 
