@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -122,13 +122,13 @@ const PricingInfoModal = ({ packageDetails, isOpen, onClose }) => {
               >
                 Click here for detailed specifications
               </Link>
-              <Link to={`/product/${packageDetails.id}`}>
+              <Link to={`/checkout?packageId=${encodeURIComponent(packageDetails.id)}`}>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="bg-black px-12 py-3 rounded-full hover:bg-opacity-30 transition-colors text-xl font-semibold border-2 border-white hover:bg-black"
+                  className="rounded-full bg-gradient-to-b from-sky-500 to-[#00D0B8] px-12 py-3 text-xl font-semibold text-white transition-opacity hover:opacity-90"
                 >
-                  Purchase & Upload
+                  Submit to Festival
                 </motion.button>
               </Link>
             </div>
@@ -198,7 +198,7 @@ const PricingCard = ({ packageDetails }) => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-max px-20 font-bold py-3 border-[3px] text-white uppercase border-sky-500 rounded-full hover:bg-gradient-to-b hover:from-[#6496d3] hover:to-[#00C7C1]"
+                className="w-max rounded-full bg-gradient-to-b from-sky-500 to-[#00D0B8] px-20 py-3 font-bold uppercase text-white transition-opacity hover:opacity-90"
               >
                 Upload
               </motion.button>

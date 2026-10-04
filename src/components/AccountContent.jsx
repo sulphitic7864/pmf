@@ -242,7 +242,7 @@ const AccountContent = () => {
         )}
         <button
           type="submit"
-          className="mt-3 w-full rounded-md bg-gradient-to-r from-sky-500 to-cyan-400 px-5 py-3 font-semibold text-[#031015] transition-opacity hover:opacity-90 sm:w-auto"
+          className="mt-3 w-full rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-5 py-3 font-semibold text-white transition-opacity hover:opacity-90 sm:w-auto"
         >
           Save changes
         </button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from './Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { textInputs } from '../constants/constants';
@@ -66,7 +66,7 @@ const HomeSlider = () => {
             animate={{ opacity: 1, y: 0, rotateX: 0 }}
             transition={{ delay: 1, duration : 0.8, ease: 'easeIn' }} 
           >
-            <Link to={'/my-account/'}>
+            <Link to={'/contest'}>
           <Button title="SUBMIT YOUR FILM" />
             </Link>
           </motion.div>
@@ -126,7 +126,7 @@ const HomeSlider = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1, duration : 0.8, ease: 'easeIn' }} 
           >
-            <Link to={'/my-account/'}>
+            <Link to={'/contest'}>
               <Button title="SUBMIT YOUR FILM" fontsize={18} extraclass={'text-white scale-y-100'} />
             </Link>
           </motion.div>

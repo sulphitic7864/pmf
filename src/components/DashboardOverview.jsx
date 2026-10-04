@@ -105,11 +105,11 @@ const DashboardOverview = () => {
                     <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-400/10 text-cyan-300'><FileVideo2 size={20} /></span>
                     <div className='min-w-0'>
                       <p className='truncate text-sm font-medium'>{getFileName(video.url, `Film submission ${index + 1}`)}</p>
-                      <p className='mt-1 text-xs text-gray-500'>Package {video.packageType || 'submission'}</p>
+                      <p className='mt-1 text-xs text-gray-500'>{video.festivalTitle || `Package ${video.packageType || 'submission'}`}</p>
                     </div>
                   </div>
                   <div className='flex items-center justify-between gap-4 sm:justify-end'>
-                    <span className='inline-flex items-center gap-1.5 text-xs text-emerald-300'><CheckCircle2 size={14} /> File received</span>
+                    <span className='inline-flex items-center gap-1.5 text-xs text-emerald-300'><CheckCircle2 size={14} /> {video.submissionStatus || 'Submitted'}</span>
                     {video.url && <a href={video.url} target='_blank' rel='noreferrer' className='text-xs font-medium text-cyan-300 hover:text-cyan-100'>Open file</a>}
                   </div>
                 </div>
@@ -120,7 +120,7 @@ const DashboardOverview = () => {
               <FolderOpen size={34} className='text-cyan-300' />
               <h3 className='mt-4 font-medium'>No submissions yet</h3>
               <p className='mt-2 max-w-sm text-sm leading-6 text-gray-400'>Once you upload a film, it will appear here.</p>
-              <Link to='/my-account/orders' className='mt-5 inline-flex items-center gap-2 rounded-md bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-[#041014] hover:bg-cyan-300'>Start a submission <ArrowRight size={16} /></Link>
+              <Link to='/my-account/orders' className='mt-5 inline-flex items-center gap-2 rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90'>Start a submission <ArrowRight size={16} /></Link>
             </div>
           )}
         </section>
@@ -199,8 +199,8 @@ const DashboardOverview = () => {
                 <div key={video.id || video.url || index} className='flex items-center gap-3 py-3'>
                   <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-cyan-400/10 text-cyan-300'><MonitorPlay size={19} /></span>
                   <div className='min-w-0 flex-1'>
-                    <p className='truncate text-xs font-medium'>{getFileName(video.url, `Film ${videos.length - index}`)}</p>
-                    <p className='mt-1 text-[11px] text-emerald-300'>File received</p>
+                    <p className='truncate text-xs font-medium'>{video.title || getFileName(video.url, `Film ${videos.length - index}`)}</p>
+                    <p className='mt-1 truncate text-[11px] text-emerald-300'>{video.festivalTitle || video.submissionStatus || 'Submitted'}</p>
                   </div>
                 </div>
               ))}

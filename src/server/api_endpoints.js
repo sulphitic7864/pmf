@@ -75,12 +75,12 @@ export const API_ENDPOINTS = {
 };  
 
 
-export const createpayment = async (requestBody) => {
+export const createpayment = async (requestBody, token) => {
   // eslint-disable-next-line no-useless-catch
   try {
-    console.log("paymentDatax", requestBody);
-    const res = await API.post(`payapi/store-payment-details`, requestBody);
-    // 
+    const res = await axios.post(`${API_BASE_URL}/payapi/store-payment-details`, requestBody, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
     return res.data;
   } catch (error) {
     throw error;

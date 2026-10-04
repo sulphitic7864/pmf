@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowRight, CircleCheck, Film } from "lucide-react";
 import { getPackageById } from "../server/api_endpoints";
@@ -8,7 +8,7 @@ import festivalReelBackground from "../assets/images/CinematicFilmFestivalReelBr
 const PackageProducts = () => {
   const { packageid } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useContext(CartContext);
+  const { setCart } = useContext(CartContext);
   const [loading, setLoading] = useState(true);
   const [packagedetail, setPackageDetails] = useState(null);
   const [error, setError] = useState("");
@@ -50,8 +50,8 @@ const PackageProducts = () => {
   };
 
   const handleProceedToPayment = () => {
-    addToCart(packageDetails);
-    navigate("/checkout");
+    setCart([packageDetails]);
+    navigate(`/checkout?packageId=${encodeURIComponent(packageid)}`);
   };
 
   return (
@@ -116,7 +116,7 @@ const PackageProducts = () => {
           <button
             type="button"
             onClick={handleProceedToPayment}
-            className="mt-10 flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-cyan-400 px-5 py-3 text-base font-semibold text-[#031015] transition-colors hover:bg-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-200 focus:ring-offset-2 focus:ring-offset-[#090d0f] sm:text-lg"
+            className="mt-10 flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-b from-sky-500 to-[#00D0B8] px-5 py-3 text-base font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-200 focus:ring-offset-2 focus:ring-offset-[#090d0f] sm:text-lg"
           >
             Proceed to Payment
             <ArrowRight size={20} aria-hidden="true" />

@@ -1,4 +1,3 @@
-import React from 'react'
 import Button from '../components/Button'
 import { cardDetails, images } from '../constants/constants'
 import HomeSlider from '../components/HomeSlider'
@@ -40,7 +39,7 @@ const Homepage = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 1 }}
                     >
-                    <Link to={'/my-account/'} className='hover:scale-90 transtion-all duration-300 w-max '>
+                    <Link to={'/contest'} className='hover:scale-90 transtion-all duration-300 w-max '>
                         <Button title='SUBMIT YOUR FILM' textCol='white' fontsize={16} extraclass={'tracking-[0.1px] scale-y-[0.9] py-[10px] hover:bg-gradient-to-tr '}/>
                     </Link>
                 </motion.div>
@@ -77,7 +76,7 @@ const Homepage = () => {
             transition={{ duration: 1 }}
             className='mt-10'
         >
-            <Link to={'/my-account/'}
+            <Link to={'/contest'}
                 className='hover:scale-90 transition-all duration-500 w-max'
             >
             <Button title='SUBMIT FILM' fontsize={15} extraclass={'py-4 text-white scale-y-105 hover:bg-gradient-to-tr '} />

@@ -61,17 +61,22 @@
 // };
 
 
-import React, { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import { getCouponById } from "../server/api_endpoints";
 
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("pmf-cart") || "[]");
+    } catch {
+      return [];
+    }
+  });
   const [totalAmount, setTotalAmount] = useState(0);
   const [subtotal, setSubtotal] = useState(0);
   const [discount, setDiscount] = useState(0);
-  const [prodcutid, setProductId] = useState("");
   const [selectedFile, setSelectedFile] = useState(undefined);
 
   const addToCart = (packageItem) => {
@@ -89,6 +94,7 @@ export const CartProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    sessionStorage.setItem("pmf-cart", JSON.stringify(cart));
     const newSubtotal = cart.reduce((acc, item) => acc + parseFloat(item.amount), 0);
     setSubtotal(parseFloat(newSubtotal.toFixed(2)));
 
@@ -118,7 +124,8 @@ export const CartProvider = ({ children }) => {
         totalAmount, 
         discount, 
         selectedFile, 
-        addToCart, 
+        addToCart,
+        setCart,
         removeFromCart, 
         applyCoupon, 
         setSelectedFile 
