@@ -2,6 +2,7 @@ import React from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_ENDPOINTS } from "../server/api_endpoints";
 
 const RecoverPassword = () => {
   const [recoverEmail, setRecoverEmail] = React.useState("");
@@ -20,7 +21,7 @@ const RecoverPassword = () => {
 
     try {
       const response = await axios.post(
-        "https://backend.placemyfilms.com/user/sendOTP",
+        API_ENDPOINTS.SEND_OTP,
         {
           usernameOrEmail: recoverEmail,
         },
@@ -49,7 +50,7 @@ const RecoverPassword = () => {
 
     try {
       const response = await axios.post(
-        "https://backend.placemyfilms.com/user/validateOtp",
+        API_ENDPOINTS.CONFIRM_OTP,
         {
           usernameOrEmail: recoverEmail,
           enteredOTP: otp,
@@ -79,7 +80,7 @@ const RecoverPassword = () => {
 
     try {
       const response = await axios.patch(
-        "https://backend.placemyfilms.com/user/resetPasswordByUsernameOrEmail",
+        API_ENDPOINTS.RECOVER_PASSWORD,
         {
           usernameOrEmail: recoverEmail,
           newPassword: newPassword,

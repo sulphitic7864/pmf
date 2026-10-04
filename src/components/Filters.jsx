@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { GrNotes } from 'react-icons/gr';
 import { IoMdArrowDropdown, IoMdPerson } from 'react-icons/io';
-import { IoPricetagSharp } from 'react-icons/io5';
 import { MdAllInclusive } from 'react-icons/md';
-import axios from 'axios';
+import { API_ENDPOINTS } from '../server/api_endpoints';
 
 const Filters = ({ onCategoryChange, onAuthorChange }) => {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -17,8 +16,8 @@ const Filters = ({ onCategoryChange, onAuthorChange }) => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const res = await axios.get(`https://backend.placemyfilms.com/blog/getAllBlogs`);
-        const blogs = res.data.result || [];
+        const res = await fetch(API_ENDPOINTS.GET_ALL_BLOGS).then((response) => response.json());
+        const blogs = res.result || [];
         const uniqueAuthors = [...new Set(blogs.map((blog) => blog.author))];
         setAuthors(uniqueAuthors);
       } catch (error) {

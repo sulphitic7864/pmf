@@ -67,7 +67,7 @@ const DashoboardContent = () => {
     const getUserDetails = async () => {
       try {
         const response = await axios.get(
-          API_ENDPOINTS.GET_USER_DETAILS + `/${userID}`,
+          API_ENDPOINTS.GET_USER_DETAILS(userID),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -171,7 +171,7 @@ const OrderContent = () => {
       try {
         const requestBody = { user_id: userID };
         const response = await axios.post(
-          "https://backend.placemyfilms.com/videosUpload/getByUserId",
+          API_ENDPOINTS.GET_USER_VIDEOS,
           requestBody,
           {
             headers: {
@@ -206,7 +206,7 @@ const OrderContent = () => {
           packageType: "99",
         };
         const response = await axios.post(
-          "https://backend.placemyfilms.com/videosCount/getAllVideoCount_99",
+          API_ENDPOINTS.GET_VIDEO_COUNT_99,
           requestBody,
           {
             headers: {
@@ -237,7 +237,7 @@ const OrderContent = () => {
           packageType: "299",
         };
         const response = await axios.post(
-          "https://backend.placemyfilms.com/videosCount/getAllVideoCount_299",
+          API_ENDPOINTS.GET_VIDEO_COUNT_299,
           requestBody,
           {
             headers: {
@@ -265,7 +265,7 @@ const OrderContent = () => {
       try {
         const requestBody = { user_id: userID };
         const response = await axios.post(
-          "https://backend.placemyfilms.com/videosCount/getAllUsedVideoCountByUserId",
+          API_ENDPOINTS.GET_USED_VIDEO_COUNTS,
           requestBody,
           {
             headers: {
@@ -638,7 +638,7 @@ const AddressContent = () => {
       
       try {
         const response = await axios.get(
-          `https://backend.placemyfilms.com/user/getUserById/${userID}`,
+          API_ENDPOINTS.GET_USER_DETAILS(userID),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -674,7 +674,7 @@ const AddressContent = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://backend.placemyfilms.com/payapi/billing-detailsbyuserid/${userID}`,
+          API_ENDPOINTS.GET_BILLING_DETAILS_BY_USER(userID),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -813,7 +813,7 @@ const AddressContent = () => {
         };
 
         response = await axios.put(
-          `https://backend.placemyfilms.com/payapi/updateBillingByUserID/${userID}`,
+          API_ENDPOINTS.UPDATE_BILLING_BY_USER(userID),
           updateBody,
           {
             headers: {
@@ -841,7 +841,7 @@ const AddressContent = () => {
         };
 
         response = await axios.post(
-          "https://backend.placemyfilms.com/payapi/createBilling",
+          API_ENDPOINTS.CREATE_BILLING,
           createBody,
           {
             headers: {
@@ -1113,7 +1113,7 @@ const PaymentContent = () => {
     const fetchPaymentHistory = async () => {
       try {
         const response = await fetch(
-          `https://backend.placemyfilms.com/payapi/payment-detailsbyuserid/${userID}`,
+          API_ENDPOINTS.GET_PAYMENT_DETAILS_BY_USER(userID),
           {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -1312,7 +1312,7 @@ const AccountContent = () => {
     const getUserDetails = async () => {
       try {
         const response = await axios.get(
-          API_ENDPOINTS.GET_USER_DETAILS + `/${userID}`,
+          API_ENDPOINTS.GET_USER_DETAILS(userID),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -1387,7 +1387,7 @@ const AccountContent = () => {
 
         console.log(token);
         const response = await axios.put(
-          API_ENDPOINTS.UPDATE_USER_DETAILS + `/${userID}`,
+          API_ENDPOINTS.UPDATE_USER_DETAILS(userID),
           requestBody,
           {
             headers: {

@@ -88,7 +88,7 @@ const LoginAndSignUp = () => {
             };
             
             await axios.put(
-                API_ENDPOINTS.UPDATE_USER_DETAILS + `/${userId}`,
+                API_ENDPOINTS.UPDATE_USER_DETAILS(userId),
                 requestBody,
                 {
                     headers: {

@@ -14,6 +14,8 @@ import { FaSpinner } from "react-icons/fa";
 import { BsDot, BsThreeDots } from "react-icons/bs";
 import { toast, ToastContainer } from "react-toastify";
 import {
+  API_BASE_URL,
+  API_ENDPOINTS,
   createpayment,
   getBillingDetailsbyuserId,
   getcheckemailadd,
@@ -68,7 +70,6 @@ const CheckoutPage = () => {
 
   const { cart, subtotal, totalAmount, discount, applyCoupon } =
     useContext(CartContext);
-  const backendurl = `${import.meta.env.VITE_API_URL}`;
 
   useEffect(() => {
     const fetchCountries = () => {
@@ -110,7 +111,7 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     window
-      .fetch(`${backendurl}/payapi/payStripe`, {
+      .fetch(API_ENDPOINTS.PAY_STRIPE, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -478,7 +479,6 @@ const CheckoutForm = ({
   const elements = useElements();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const backendurl = `${import.meta.env.VITE_API_URL}`;
   const {
     first_name,
     last_name,
@@ -590,38 +590,11 @@ const CheckoutForm = ({
       // else if (paymentIntent && paymentIntent.status === 'succeeded') {
       //   console.log('Payment succeeded:', paymentIntent);
       //   console.log('Payment details:', paymentDetails);
-      // Payment succeeded, send status to backend
-      // try {
-      //     const response = await axios.post(`${import.meta.env.VITE_API_URL}/payment-status`, {
-      //         headers: {
-      //             'Content-Type': 'application/json',
-      //             'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      //         },
-      //         body: JSON.stringify({
-      //             paymentIntentId: paymentIntent.id,
-      //             amount: paymentIntent.amount,
-      //             currency: paymentIntent.currency,
-      //             status: paymentIntent.status,
-      //             paymentDetails: JSON.stringify(paymentDetails),
-      //         }),
-      //     });
-
-      //     if (!response.ok) {
-      //         throw new Error('Failed to send payment status to the backend');
-      //     }
-
-      //     console.log('Payment status sent to backend successfully');
-      // } catch (err) {
-      //     console.error('Error sending payment status to backend:', err);
-      //     setErrorMessage('Failed to update payment status. Please contact support.');
-      // }
-      // }
-
       // Confirm the payment
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${backendurl}/success`, // Optional success page
+          return_url: `${API_BASE_URL}/success`, // Optional success page
         },
         redirect: "if_required",
       });

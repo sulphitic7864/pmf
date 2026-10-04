@@ -16,6 +16,7 @@ import { FaSpinner } from "react-icons/fa";
 import { BsDot, BsThreeDots } from "react-icons/bs";
 
 import CheckoutForm from '../components/CheckoutForm'
+import { API_ENDPOINTS } from '../server/api_endpoints'
 
 // Initialize Stripe with your publishable key
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
@@ -42,7 +43,6 @@ const CheckoutPage = () => {
     const [paymentDetails, setPaymentDetails] = useState(initialCheckoutDetails);
     const [countries, setCountries] = useState([]);
     const [states, setStates] = useState([]);
-    const backendurl = `${import.meta.env.VITE_DEVELOPMENT_BACKEND_URL}`;
 
     useEffect(() => {
       const fetchCountries = () => {
@@ -62,7 +62,7 @@ const CheckoutPage = () => {
 
     useEffect(() => {
       
-        fetch(`http://localhost:3000/payapi/payStripe`, {
+        fetch(API_ENDPOINTS.PAY_STRIPE, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

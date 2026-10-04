@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const baseURL = `${import.meta.env.VITE_API_URL}`;
+export const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
 
 
 export const multipartAPI = axios.create({
-    baseURL: baseURL,
+    baseURL: API_BASE_URL,
     timeout: 400000,
     headers: {
       "Access-Control-Allow-Origin": "*",
@@ -14,7 +14,7 @@ export const multipartAPI = axios.create({
   });
 
   export const API = axios.create({
-    baseURL: baseURL,
+    baseURL: API_BASE_URL,
     timeout: 30000,
     headers: {
       "Access-Control-Allow-Origin": "*",
@@ -23,19 +23,32 @@ export const multipartAPI = axios.create({
   });
 
 export const API_ENDPOINTS = {
-    LOGIN: `${baseURL}/user/login`,
-    REGISTER: `${baseURL}/user/register`,
-    CONTACT_US: `${baseURL}/contact/contactAdd`,
-    SEND_OTP: `${baseURL}/user/sendOTP`,
-    CONFIRM_OTP: `${baseURL}/user/validateOtp`,
-    RECOVER_PASSWORD: `${baseURL}/user/resetPasswordByUsernameOrEmail`,
-    UPLOAD_VIDEO: `${baseURL}/videosUpload/upload`,
-    GET_USER_DETAILS: `${baseURL}/user/getUserById`,
-    UPDATE_USER_DETAILS: `${baseURL}/user/updateUserById`,
-    GET_PACKAGE_DETAILS: `${baseURL}/payapi/getPackageById`,
-    GET_ALL_BLOGS: `${baseURL}/blog/getAllBlogs`,
-    // GET_VIDEO:`${baseURL}/videosUpload/getByUserId`,
-   
+    LOGIN: `${API_BASE_URL}/user/login`,
+    REGISTER: `${API_BASE_URL}/user/register`,
+    CONTACT_US: `${API_BASE_URL}/contact/contactAdd`,
+    SEND_OTP: `${API_BASE_URL}/user/sendOTP`,
+    CONFIRM_OTP: `${API_BASE_URL}/user/validateOtp`,
+    RECOVER_PASSWORD: `${API_BASE_URL}/user/resetPasswordByUsernameOrEmail`,
+    UPLOAD_VIDEO: `${API_BASE_URL}/videosUpload/upload`,
+    GET_USER_DETAILS: (userId) => `${API_BASE_URL}/user/getUserById/${userId}`,
+    UPDATE_USER_DETAILS: (userId) => `${API_BASE_URL}/user/updateUserById/${userId}`,
+    GET_PACKAGE_DETAILS: `${API_BASE_URL}/payapi/getPackageById`,
+    GET_ALL_BLOGS: `${API_BASE_URL}/blog/getAllBlogs`,
+    GET_USER_VIDEOS: `${API_BASE_URL}/videosUpload/getByUserId`,
+    GET_VIDEO_COUNT_99: `${API_BASE_URL}/videosCount/getAllVideoCount_99`,
+    GET_VIDEO_COUNT_299: `${API_BASE_URL}/videosCount/getAllVideoCount_299`,
+    GET_USED_VIDEO_COUNTS: `${API_BASE_URL}/videosCount/getAllUsedVideoCountByUserId`,
+    GET_BLOG_LIKE_COUNTS: `${API_BASE_URL}/blogReaction/getAllBlogLikeCounts`,
+    GET_BLOG_READ_COUNTS: `${API_BASE_URL}/blogRead/getAllBlogReadCounts`,
+    GET_BLOG_LIKES_BY_USER: (userId) => `${API_BASE_URL}/blogReaction/getByUser_id/${userId}`,
+    GET_BLOG_READS_BY_USER: (userId) => `${API_BASE_URL}/blogRead/getByUser_id/${userId}`,
+    UPDATE_BLOG_REACTION: `${API_BASE_URL}/blogReaction/updateStatus`,
+    UPDATE_BLOG_READ: `${API_BASE_URL}/blogRead/updateStatus`,
+    GET_BILLING_DETAILS_BY_USER: (userId) => `${API_BASE_URL}/payapi/billing-detailsbyuserid/${userId}`,
+    UPDATE_BILLING_BY_USER: (userId) => `${API_BASE_URL}/payapi/updateBillingByUserID/${userId}`,
+    CREATE_BILLING: `${API_BASE_URL}/payapi/createBilling`,
+    GET_PAYMENT_DETAILS_BY_USER: (userId) => `${API_BASE_URL}/payapi/payment-detailsbyuserid/${userId}`,
+    PAY_STRIPE: `${API_BASE_URL}/payapi/payStripe`,
 }
 
 
@@ -45,7 +58,7 @@ export const API_ENDPOINTS = {
  export const getAllPackage = async () => {
     try {
       const res = await multipartAPI.get(`payapi/getAllPackage`);
-      console.log("yyyyyyyyyyyyyyyy",res)
+      console.log("getAllPackage",res)
       return res.data;
     } catch (error) {
       return error;
@@ -80,7 +93,7 @@ export const createpayment = async (requestBody) => {
 export const getCouponById = async (id) => {
   try {
     const res = await multipartAPI.get(`payapi/applycoupon/${id}`);
-    console.log("yyyyyyyyyyyyyyyy",res)
+    console.log("getCouponById",res)
     return res.data;
   } catch (error) {
     return error;
@@ -100,6 +113,7 @@ export const getAllBlogs = async () => {
 export const getBlogById = async (id) => {
   try {
     const res = await multipartAPI.get(`blog/getBlogById/${id}`);
+    console.log("getBlogById",res)
     return res.data;
   } catch (error) {
     return error;
@@ -116,7 +130,7 @@ export const getBlogById = async (id) => {
 export const getBillingDetailsbyuserId = async (userid) => {
   try {
     const res = await API.get(`payapi/billing-detailsbyuserid/${userid}`);
-    console.log("yyyyyyyyyyyyyyyy",res)
+    console.log("getBillingDetailsbyuserId",res)
     return res.data;
   } catch (error) {
     return error;
@@ -136,7 +150,7 @@ export const getcheckemailadd = async (email) => {
 export const getcheckusername = async (user_name) => {
   try {
     const res = await API.get(`user/getUserByUserName/${user_name}`);
-    console.log("REEE",res)
+    console.log("getcheckusername",res)
     return res.data;
   } catch (error) {
     return error;

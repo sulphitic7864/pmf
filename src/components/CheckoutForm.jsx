@@ -61,31 +61,6 @@ try{
       else if (paymentIntent && paymentIntent.status === 'succeeded') {
         console.log('Payment succeeded:', paymentIntent);
         console.log('Payment details:', paymentDetails);
-        // Payment succeeded, send status to backend
-          // try {
-          //     const response = await axios.post(`${import.meta.env.VITE_API_URL}/payment-status`, {
-          //         headers: {
-          //             'Content-Type': 'application/json',
-          //             'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          //         },
-          //         body: JSON.stringify({
-          //             paymentIntentId: paymentIntent.id,
-          //             amount: paymentIntent.amount,
-          //             currency: paymentIntent.currency,
-          //             status: paymentIntent.status,
-          //             paymentDetails: JSON.stringify(paymentDetails),
-          //         }),
-          //     });
-      
-          //     if (!response.ok) {
-          //         throw new Error('Failed to send payment status to the backend');
-          //     }
-      
-          //     console.log('Payment status sent to backend successfully');
-          // } catch (err) {
-          //     console.error('Error sending payment status to backend:', err);
-          //     setErrorMessage('Failed to update payment status. Please contact support.');
-          // }
           }
         }catch (err) {
           console.log("xxxxxxx",err)

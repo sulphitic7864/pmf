@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BiNote } from 'react-icons/bi';
 import { IoMdPerson } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
-import { getAllBlogs } from '../server/api_endpoints';
+import { API_ENDPOINTS, getAllBlogs } from '../server/api_endpoints';
 import { jwtDecode } from 'jwt-decode';
 import { BiHeart, BiSolidHeart } from 'react-icons/bi';
 
@@ -52,7 +52,7 @@ const BlogCard = ({ selectedCategory, selectedAuthor }) => {
     const fetchInteractionData = async () => {
       try {
         // Fetch all blogs' like counts
-        const likeCountsResponse = await fetch('https://backend.placemyfilms.com/blogReaction/getAllBlogLikeCounts');
+        const likeCountsResponse = await fetch(API_ENDPOINTS.GET_BLOG_LIKE_COUNTS);
         const likeCountsData = await likeCountsResponse.json();
         
         if (likeCountsData.status) {
@@ -64,7 +64,7 @@ const BlogCard = ({ selectedCategory, selectedAuthor }) => {
         }
 
         // Fetch all blogs' read counts
-        const readCountsResponse = await fetch('https://backend.placemyfilms.com/blogRead/getAllBlogReadCounts');
+        const readCountsResponse = await fetch(API_ENDPOINTS.GET_BLOG_READ_COUNTS);
         const readCountsData = await readCountsResponse.json();
         
         if (readCountsData.status) {
@@ -78,7 +78,7 @@ const BlogCard = ({ selectedCategory, selectedAuthor }) => {
         // Only fetch user interactions if logged in
         if (userId) {
           // Fetch user likes
-          const userLikesResponse = await fetch(`https://backend.placemyfilms.com/blogReaction/getByUser_id/${userId}`);
+          const userLikesResponse = await fetch(API_ENDPOINTS.GET_BLOG_LIKES_BY_USER(userId));
           const userLikesData = await userLikesResponse.json();
           
           if (userLikesData.status) {
@@ -90,7 +90,7 @@ const BlogCard = ({ selectedCategory, selectedAuthor }) => {
           }
           
           // Fetch user reads
-          const userReadsResponse = await fetch(`https://backend.placemyfilms.com/blogRead/getByUser_id/${userId}`);
+          const userReadsResponse = await fetch(API_ENDPOINTS.GET_BLOG_READS_BY_USER(userId));
           const userReadsData = await userReadsResponse.json();
           
           if (userReadsData.status) {
@@ -118,7 +118,7 @@ const BlogCard = ({ selectedCategory, selectedAuthor }) => {
     try {
       const newStatus = userLikes[blogId] ? 'unlike' : 'like';
       
-      const response = await fetch('https://backend.placemyfilms.com/blogReaction/updateStatus', {
+      const response = await fetch(API_ENDPOINTS.UPDATE_BLOG_REACTION, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -157,7 +157,7 @@ const BlogCard = ({ selectedCategory, selectedAuthor }) => {
     // If user hasn't already read this blog
     if (!userReads[blogId]) {
       try {
-        const response = await fetch('https://backend.placemyfilms.com/blogRead/updateStatus', {
+        const response = await fetch(API_ENDPOINTS.UPDATE_BLOG_READ, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

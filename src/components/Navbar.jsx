@@ -122,7 +122,7 @@ const Navbar = () => {
                 aria-label='Mobile navigation'
                 aria-hidden={!showNav}
                 inert={!showNav ? '' : undefined}
-                className={`fixed right-0 top-0 z-[80] flex h-screen w-[min(88vw,22rem)] flex-col border-l border-white/10 bg-[#101314] text-white shadow-2xl transition-transform duration-300 ease-out md:hidden ${showNav ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`fixed right-0 top-0 z-[80] flex h-screen h-[100dvh] max-h-[100dvh] w-[min(88vw,22rem)] flex-col overflow-y-auto overscroll-contain border-l border-white/10 bg-[#101314] text-white shadow-2xl transition-transform duration-300 ease-out md:hidden ${showNav ? 'translate-x-0' : 'translate-x-full'}`}
             >
                 <div className='flex h-[75px] shrink-0 items-center justify-between border-b border-white/10 px-5'>
                     <Link to='/' className='flex items-center gap-2' onClick={() => setShowNav(false)}>
@@ -139,7 +139,7 @@ const Navbar = () => {
                     </button>
                 </div>
 
-                <nav aria-label='Mobile navigation links' className='flex flex-col gap-2 px-4 py-6'>
+                <nav aria-label='Mobile navigation links' className='flex shrink-0 flex-col gap-2 px-4 py-6'>
                     {routes.map((route) => (
                         <Link
                             key={route.path}
@@ -153,12 +153,12 @@ const Navbar = () => {
                     ))}
                 </nav>
 
-                <div className='mt-auto border-t border-white/10 p-5'>
+                <div className='sticky bottom-0 z-10 mt-auto shrink-0 border-t border-white/10 bg-[#101314] p-4 sm:p-5'>
                     {user ? (
                         <button
                             type='button'
                             onClick={handleLogout}
-                            className='flex w-full items-center justify-center gap-2 rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-4 py-3 font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300'
+                            className='flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-4 py-3 font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300'
                         >
                             <MdLogout size={20} />
                             Log out
@@ -167,7 +167,7 @@ const Navbar = () => {
                         <Link
                             to='/my-account/'
                             onClick={() => setShowNav(false)}
-                            className='flex w-full items-center justify-center gap-2 rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-4 py-3 font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300'
+                            className='flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-4 py-3 font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300'
                         >
                             <MdOutlineLogin size={20} />
                             Login

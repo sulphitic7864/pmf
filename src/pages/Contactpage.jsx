@@ -44,7 +44,7 @@ const Contactpage = () => {
         const getUserDetails = async () => {
             try {
                 const response = await axios.get(
-                    API_ENDPOINTS.GET_USER_DETAILS + `/${userID}`,
+                    API_ENDPOINTS.GET_USER_DETAILS(userID),
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
