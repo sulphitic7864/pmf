@@ -53,8 +53,8 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <div className='flex min-h-[calc(100vh-5rem)] w-full max-w-[1600px]'>
-        <aside className={`sticky top-16 hidden h-[calc(100dvh-5rem)] shrink-0 border-r border-white/10 bg-[#080d10] transition-[width] duration-200 md:block ${sidebarCollapsed ? 'w-[5rem]' : 'w-60'}`}>
+      <div className='flex min-h-[calc(100vh-4rem)] w-full max-w-[1600px]'>
+        <aside className={`sticky top-16 hidden h-[calc(100dvh-4rem)] shrink-0 border-r border-white/10 bg-[#080d10] transition-[width] duration-200 md:block ${sidebarCollapsed ? 'w-[5rem]' : 'w-60'}`}>
           <SideBar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((collapsed) => !collapsed)} />
         </aside>
 
