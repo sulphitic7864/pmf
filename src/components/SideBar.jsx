@@ -1,71 +1,83 @@
-import React from 'react'
-import { BiLogOut } from 'react-icons/bi'
-import { FaAddressBook } from 'react-icons/fa'
-import { GrOrderedList } from 'react-icons/gr'
-import { MdAccountBox, MdDashboard, MdMessage, MdPayment } from 'react-icons/md'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
+import { CircleHelp, CreditCard, FileText, House, LogOut, Mail, MapPin, Settings, UploadCloud } from 'lucide-react'
+import dashboardBanner from '../assets/images/dashbaord_side_banner.png'
 
 const navigationContent = [
-    {
-        name: 'Dashboard',
-        icon: <MdDashboard/>,
-        link: '/my-account/'
-    },
-    {
-        name: 'Orders',
-        icon: <GrOrderedList/>,
-        link: '/my-account/orders'
-    },
-    // {
-    //     name: 'Message',
-    //     icon: <MdMessage/>,
-    //     link: '/my-account/messages'
-    // },
-    {
-        name: 'Address',
-        icon: <FaAddressBook/>,
-        link: '/my-account/edit-address'
-    },
-    {
-        name: 'Payment history',
-        icon: <MdPayment/>,
-        link: '/my-account/payment-methods'
-    },
-    {
-        name: 'Account details',
-        icon: <MdAccountBox/>,
-        link: '/my-account/edit-account'
-    }
+    { name: 'Dashboard', icon: House, link: '/my-account/' },
+    { name: 'New Submission', icon: UploadCloud, link: '/my-account/orders' },
+    { name: 'My Submissions', icon: FileText, link: '/my-account/submissions' },
+    { name: 'Messages', icon: Mail, link: '/my-account/messages' },
 ]
 
-const SideBar = ({setShowSidebar}) => {
+const accountContent = [
+    { name: 'Account Settings', icon: Settings, link: '/my-account/edit-account' },
+    { name: 'Billing Address', icon: MapPin, link: '/my-account/edit-address' },
+    { name: 'Payment History', icon: CreditCard, link: '/my-account/payment-methods' },
+]
+
+const SideBar = ({ hidePromo = false, hideLogout = false, onLogout }) => {
     const navigate = useNavigate()
     const { pathname } = useLocation()
+
     const handleLogout = () => {
-        sessionStorage.clear();
-        localStorage.clear();
-        localStorage.removeItem('userid')
-        localStorage.removeItem('token')
+        if (onLogout) {
+            onLogout()
+            return
+        }
+        sessionStorage.clear()
+        localStorage.clear()
         navigate('/')
-        
     }
-return (
-    <div>
-        <div className="w-full bg-[#0A0A0A] h-auto absolute md:relative z-50">
-                <div className="flex w-max h-auto flex-col pl-10 xl:pl-16 py-10 pr-8 mt-10">
-                    {
-                        navigationContent.map((item, index) => (
-                            <Link to={item.link} key={index} className={`text-white text-lg mb-4 hover:text-gray-400 flex gap-2 items-center ${pathname === item.link ? 'bg-[#121212] p-2 rounded-sm' : ''}`}
-                            onClick={()=>setShowSidebar(false)}
-                            > {item.icon} <p>{item.name}</p></Link>
-                        ))
-                    }
-                <hr className='border-gray-700 my-1' />
-                <div className="text-white cursor-pointer text-lg mb-4 hover:text-gray-400 flex gap-2 items-center" onClick={handleLogout}><BiLogOut/> <p>Log out</p></div>
+
+    const renderNavigation = (items) => items.map(({ name, icon: Icon, link }) => {
+        const isActive = pathname === link
+        return (
+            <Link
+                key={link}
+                to={link}
+                className={`group flex min-h-11 items-center gap-3 rounded-r-lg border-l-[3px] px-3 text-sm transition-colors ${isActive ? 'border-cyan-400 bg-gradient-to-r from-cyan-400/15 to-transparent text-cyan-200' : 'border-transparent text-gray-300 hover:bg-white/[0.04] hover:text-white'}`}
+            >
+                <Icon size={18} className={isActive ? 'text-cyan-300' : 'text-gray-400 group-hover:text-cyan-300'} />
+                <span>{name}</span>
+            </Link>
+        )
+    })
+
+    return (
+        <div className={`flex h-full flex-col overflow-y-auto px-3 py-5 ${hideLogout ? 'pb-24' : ''}`}>
+            <p className='mb-3 px-3 text-[10px] font-semibold uppercase text-gray-500'>Workspace</p>
+            <nav aria-label='Creator workspace' className='flex flex-col gap-1'>
+                {renderNavigation(navigationContent)}
+            </nav>
+            <p className='mb-3 mt-7 px-3 text-[10px] font-semibold uppercase text-gray-500'>Account</p>
+            <nav aria-label='Account settings' className='flex flex-col gap-1'>
+                {renderNavigation(accountContent)}
+            </nav>
+            <Link to='/contact' className='mt-1 flex min-h-11 items-center gap-3 rounded-r-lg border-l-[3px] border-transparent px-3 text-sm text-gray-300 transition-colors hover:bg-white/[0.04] hover:text-white'>
+                <CircleHelp size={18} className='text-gray-400' />
+                Help & Support
+            </Link>
+            {!hidePromo && (
+                <div className='mt-auto hidden pt-6 md:block'>
+                    <img src={dashboardBanner} alt='Your story belongs here' className='mx-auto aspect-[0.58] max-h-64 w-full rounded-sm object-cover object-center' />
+                    <p className='mt-3 text-center text-[10px] uppercase text-gray-500'>Film · TV · Streaming · Global</p>
                 </div>
+            )}
+            {!hideLogout && <div className='sticky bottom-0 z-10 mt-auto border-t border-white/10 bg-[#080d10] pb-4 pt-3 md:border-0 md:bg-transparent md:pb-0'>
+                <button type='button' onClick={handleLogout} className='flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-4 text-sm font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 md:justify-start md:rounded-r-lg md:rounded-l-none md:border-l-[3px] md:border-transparent md:bg-none md:px-3 md:text-gray-300 md:hover:bg-white/[0.04] md:hover:text-rose-300'>
+                    <LogOut size={18} className='md:text-gray-400' />
+                    Log out
+                </button>
+            </div>}
         </div>
-    </div>
-)
+    )
+}
+
+SideBar.propTypes = {
+    hidePromo: PropTypes.bool,
+    hideLogout: PropTypes.bool,
+    onLogout: PropTypes.func,
 }
 
 export default SideBar

@@ -1,14 +1,13 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { API_ENDPOINTS } from "../server/api_endpoints";
 import { jwtDecode } from "jwt-decode";
+import DashboardOverview, { MessagesScreen } from "./DashboardOverview";
 import { FaCloudUploadAlt, FaTrash } from "react-icons/fa";
 import Dropzone from "react-dropzone";
 import { CgClose } from "react-icons/cg";
-import { useNavigate } from "react-router-dom";
-import { Loader } from "lucide-react";
 import { Country, State } from "country-state-city";
 
 const DashboardComponents = () => {
@@ -17,13 +16,16 @@ const DashboardComponents = () => {
   function AdminComponent(pathname) {
     switch (pathname) {
       case "/my-account/":
-        return <DashoboardContent />;
+        return <DashboardOverview />;
 
       case "/my-account/orders":
         return <OrderContent />;
 
+      case "/my-account/submissions":
+        return <DashboardOverview />;
+
       case "/my-account/messages":
-        return <MessageContent />;
+        return <MessagesScreen />;
 
       case "/my-account/edit-address":
         return <AddressContent />;
@@ -47,98 +49,7 @@ const DashboardComponents = () => {
 
 export default DashboardComponents;
 
-const DashoboardContent = () => {
-  const [userID, setUserID] = useState(null);
-  const [accountDetails, setAccountDetails] = useState({
-    firstName: "",
-    lastName: "",
-    displayName: "",
-    email: "",
-  });
-  const token = localStorage.getItem("token");
-
-  useEffect(() => {
-    if (token === null) return;
-    const decoded = jwtDecode(token);
-    setUserID(decoded.UserId);
-  }, []);
-
-  useEffect(() => {
-    const getUserDetails = async () => {
-      try {
-        const response = await axios.get(
-          API_ENDPOINTS.GET_USER_DETAILS(userID),
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Access-Control-Allow-Origin": "*",
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = response.data.result[0];
-        setAccountDetails({
-          firstName: data.firstName ? data.firstName : "",
-          lastName: data.lastName ? data.lastName : "",
-          displayName: data.username ? data.username : "",
-          email: data.email ? data.email : "",
-        });
-      } catch {
-        console.log("Failed to fetch user details");
-      }
-    };
-    if (userID) {
-      getUserDetails();
-    }
-  }, [userID]);
-
-  const handleLogout = () => {
-    sessionStorage.clear();
-    localStorage.clear();
-    localStorage.removeItem("userid");
-    localStorage.removeItem("token");
-    window.location.href = "/";
-  };
-
-  return (
-    <div className="mt-10 auto flex flex-col gap-5">
-      <p className="text-white">
-        Hello{" "}
-        <span className="font-bold">
-          {accountDetails.displayName || accountDetails.firstName}
-        </span>{" "}
-        (not{" "}
-        <span className="font-bold">
-          {accountDetails.displayName || accountDetails.firstName}?
-        </span>{" "}
-        <span className="underline cursor-pointer" onClick={handleLogout}>
-          {" "}
-          Log out{" "}
-        </span>
-        )
-      </p>
-      <p className="text-white">
-        From your account dashboard you can view your{" "}
-        <Link to={"/my-account/orders"} className="underline">
-          {" "}
-          recent orders
-        </Link>
-        , manage your{" "}
-        <Link to={"/my-account/edit-address"} className="underline">
-          billing address
-        </Link>
-        , and{" "}
-        <Link to={"/my-account/edit-account"} className="underline">
-          edit your password and account details
-        </Link>
-        .
-      </p>
-    </div>
-  );
-};
-
 const OrderContent = () => {
-  const navigate = useNavigate();
   const [userID, setUserID] = useState(null);
   const [package99Count, setPackage99Count] = useState(0);
   const [package299Count, setPackage299Count] = useState(0);
@@ -150,7 +61,6 @@ const OrderContent = () => {
   const [uploadLoading, setUploadLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
-  const [successMessage, setSuccessMessage] = useState("");
   const [currentPackageType, setCurrentPackageType] = useState(null);
   const [videos99, setVideos99] = useState([]);
   const [videos299, setVideos299] = useState([]);
@@ -384,7 +294,6 @@ const OrderContent = () => {
           position: "top-right",
           autoClose: 3000,
         });
-        setSuccessMessage("File uploaded successfully");
 
         setTimeout(() => {
           handleCloseModal();
@@ -404,7 +313,6 @@ const OrderContent = () => {
         autoClose: 3000,
       });
       setUploadLoading(false);
-      setSuccessMessage("Error uploading file");
     }
   };
 
@@ -413,19 +321,19 @@ const OrderContent = () => {
 
   if (loading) {
     return (
-      <div className="mt-10 px-10 py-12 bg-white">
-        <p className="text-center">Loading...</p>
+      <div className="rounded-xl border border-white/10 bg-[#0b1115] px-6 py-12 text-gray-300">
+        <p className="text-center">Loading submissions...</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="mt-10 flex flex-col gap-5 px-10 bg-[#121212] py-12">
-        <h1 className="text-2xl font-bold text-white">Your Orders</h1>
+      <div className="space-y-5 rounded-xl border border-white/10 bg-[#0b1115] p-4 sm:p-6">
+        <h1 className="text-2xl font-bold text-white">New Submission</h1>
 
         {/* $99 Package Section */}
-        <div className="border-b pb-6">
+        <div className="border-b border-white/10 pb-6">
           <div className="flex items-center justify-between gap-2">
             <div>
               <h2 className="text-xl font-semibold text-white">$99 package</h2>
@@ -434,10 +342,10 @@ const OrderContent = () => {
               </p>
             </div>
             <button
-              className={`px-4 py-2 rounded-lg text-sm text-white ${
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 canUpload99
-                  ? "bg-gradient-to-b from-[#6496d3] to-[#00C7C1] hover:opacity-90"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  ? "bg-gradient-to-b from-sky-500 to-[#00D0B8] text-white hover:opacity-90"
+                  : "cursor-not-allowed border border-cyan-300/15 bg-cyan-400/10 text-cyan-100/50"
               }`}
               disabled={!canUpload99}
               onClick={() => handleOpenModal("99")}
@@ -470,10 +378,10 @@ const OrderContent = () => {
               </p>
             </div>
             <button
-              className={`px-4 py-2 rounded-lg text-sm text-white ${
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 canUpload299
-                  ? "bg-gradient-to-b from-[#6496d3] to-[#00C7C1] hover:opacity-90"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  ? "bg-gradient-to-b from-sky-500 to-[#00D0B8] text-white hover:opacity-90"
+                  : "cursor-not-allowed border border-cyan-300/15 bg-cyan-400/10 text-cyan-100/50"
               }`}
               disabled={!canUpload299}
               onClick={() => handleOpenModal("299")}
@@ -505,18 +413,18 @@ const OrderContent = () => {
             onClick={handleCloseModal}
           />
           <button
-            className="absolute text-xl w-10 font-bold flex items-center justify-center aspect-square bg-white rounded-full top-10 right-10 text-black"
+            className="absolute right-4 top-4 flex aspect-square w-10 items-center justify-center rounded-full border border-white/15 bg-[#11191d] text-xl font-bold text-white hover:bg-white/10 sm:right-6 sm:top-6"
             onClick={handleCloseModal}
           >
             <CgClose />
           </button>
-          <div className="w-[80%] lg:w-[55%] h-auto p-10 rounded-md bg-white relative">
-            <h1 className="text-3xl font-bold mb-4">Upload Video</h1>
-            <p className="text-sm">Allowed extension: mp4, zip.</p>
-            <p className="text-sm mb-2">
+          <div className="relative h-auto max-h-[90vh] w-[min(92vw,48rem)] overflow-y-auto rounded-xl border border-white/10 bg-[#0b1115] p-5 text-white shadow-2xl sm:p-8">
+            <h1 className="mb-4 text-2xl font-bold">Upload Video</h1>
+            <p className="text-sm text-gray-300">Allowed extension: mp4, zip.</p>
+            <p className="mb-2 text-sm text-gray-300">
               Max allowed size: {currentPackageType === "99" ? "500 MB" : "3072 MB"} for ${currentPackageType} package
             </p>
-            <p className="text-sm mb-4 font-medium">
+            <p className="mb-4 text-sm font-medium text-gray-200">
               {currentPackageType === "99" 
                 ? "Video duration must be between 23-25 minutes"
                 : "Video duration must be 75 minutes or longer"}
@@ -526,7 +434,7 @@ const OrderContent = () => {
                 <section>
                   <div
                     {...getRootProps()}
-                    className="w-full h-auto min-h-[300px] z-[100] flex-col border-dashed border-4 border-gray-300 rounded-lg flex items-center justify-center cursor-pointer"
+                    className="z-[100] flex min-h-48 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-white/20 bg-black/20 p-5 text-center hover:border-cyan-300/60 sm:min-h-64"
                   >
                     <input {...getInputProps()} type="file" accept="video/*" />
                     <div className="items-center justify-center text-center">
@@ -546,14 +454,14 @@ const OrderContent = () => {
                       )}
                       {!selectedFile && (
                         <p className="text-sm text-gray-500">
-                          Drag 'n' drop some files here, or click to select files
+                          Drag &apos;n&apos; drop some files here, or click to select files
                         </p>
                       )}
                     </div>
                   </div>
                   {selectedFile && (
                     <div className="flex items-center justify-center mx-auto gap-2 mb-2">
-                      <p className="text-sm text-blue-900">
+                      <p className="text-sm text-cyan-200">
                         {selectedFile.name}
                       </p>
                       <FaTrash
@@ -566,7 +474,7 @@ const OrderContent = () => {
               )}
             </Dropzone>
             <button
-              className="w-max px-5 rounded-md py-2 mt-4 bg-black text-white font-semibold"
+              className="mt-4 w-full rounded-md bg-cyan-400 px-5 py-3 font-semibold text-[#031015] hover:bg-cyan-300 sm:w-auto"
               onClick={handleSubmit}
               disabled={uploadLoading}
             >
@@ -576,16 +484,6 @@ const OrderContent = () => {
         </div>
       )}
     </>
-  );
-};
-
-const MessageContent = () => {
-  return (
-    <div className="mt-10 auto flex flex-col gap-5 px-10 bg-white py-12">
-      <h1>Messages</h1>
-      <p>You have no new messages.</p>
-      <p>Check back later for updates.</p>
-    </div>
   );
 };
 
@@ -879,8 +777,9 @@ const AddressContent = () => {
   };
 
   return (
-    <div className="mt-10 auto flex flex-col gap-5 px-10 bg-[#121212] py-12">
-      <h1 className="text-3xl font-semibold text-white">Address</h1>
+    <div className="space-y-5 rounded-xl border border-white/10 bg-[#0b1115] p-4 sm:p-6">
+      <h1 className="text-2xl font-semibold text-white sm:text-3xl">Billing Address</h1>
+      {loading && <p className="text-sm text-gray-400">Loading saved billing details...</p>}
       <p className="text-gray-400">
         The following addresses will be used on the checkout page by default.
       </p>
@@ -890,8 +789,8 @@ const AddressContent = () => {
       </h2>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <div className="flex gap-2 w-full">
-          <div className="flex flex-col w-1/2 gap-2">
+        <div className="flex w-full flex-col gap-3 sm:flex-row">
+          <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">First name *</label>
             <input
               className={`p-2 rounded bg-[#333] text-white ${
@@ -907,7 +806,7 @@ const AddressContent = () => {
               <span className="text-red-500 text-sm">{error.first_name}</span>
             )}
           </div>
-          <div className="flex flex-col w-1/2 gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">Last name *</label>
             <input
               className={`p-2 rounded bg-[#333] text-white ${
@@ -974,8 +873,8 @@ const AddressContent = () => {
           onChange={handleInputChange}
         />
 
-        <div className="flex gap-2 w-full">
-          <div className="flex flex-col w-1/2 gap-2">
+        <div className="flex w-full flex-col gap-3 sm:flex-row">
+          <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">Town / City *</label>
             <input
               className={`p-2 rounded bg-[#333] text-white ${
@@ -991,7 +890,7 @@ const AddressContent = () => {
               <span className="text-red-500 text-sm">{error.city}</span>
             )}
           </div>
-          <div className="flex flex-col w-1/2 gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">State *</label>
             <select
               className={`p-2 rounded bg-[#333] text-white ${
@@ -1015,8 +914,8 @@ const AddressContent = () => {
           </div>
         </div>
 
-        <div className="flex gap-2 w-full">
-          <div className="flex flex-col w-1/2 gap-2">
+        <div className="flex w-full flex-col gap-3 sm:flex-row">
+          <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">ZIP Code *</label>
             <input
               className={`p-2 rounded bg-[#333] text-white ${
@@ -1032,7 +931,7 @@ const AddressContent = () => {
               <span className="text-red-500 text-sm">{error.zip_code}</span>
             )}
           </div>
-          <div className="flex flex-col w-1/2 gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">Phone *</label>
             <input
               className={`p-2 rounded bg-[#333] text-white ${
@@ -1102,7 +1001,7 @@ const PaymentContent = () => {
     try {
       const decoded = jwtDecode(token);
       setUserID(decoded.UserId);
-    } catch (err) {
+    } catch {
       setError("Invalid token");
     }
   }, [token]);
@@ -1139,7 +1038,7 @@ const PaymentContent = () => {
         } else {
           setError("Failed to fetch payment data");
         }
-      } catch (err) {
+      } catch {
         setError("Error fetching payment data");
       } finally {
         setLoading(false);
@@ -1168,8 +1067,8 @@ const PaymentContent = () => {
 
   if (!token) {
     return (
-      <div className="max-w-4xl mx-auto p-4 bg-black min-h-screen">
-        <div className="bg-gray-900 rounded-lg shadow">
+      <div className="mx-auto min-h-64 max-w-4xl rounded-xl border border-white/10 bg-[#0b1115] p-4">
+        <div className="rounded-lg">
           <div className="flex justify-center items-center h-40">
             <p className="text-gray-400">
               Please login to view payment history
@@ -1182,8 +1081,8 @@ const PaymentContent = () => {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-4 bg-black min-h-screen">
-        <div className="bg-gray-900 rounded-lg shadow">
+      <div className="mx-auto min-h-64 max-w-4xl rounded-xl border border-white/10 bg-[#0b1115] p-4">
+        <div className="rounded-lg">
           <div className="flex justify-center items-center h-40">
             <p className="text-gray-400">Loading payment history...</p>
           </div>
@@ -1194,8 +1093,8 @@ const PaymentContent = () => {
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto p-4 bg-black min-h-screen">
-        <div className="bg-gray-900 rounded-lg shadow">
+      <div className="mx-auto min-h-64 max-w-4xl rounded-xl border border-white/10 bg-[#0b1115] p-4">
+        <div className="rounded-lg">
           <div className="flex justify-center items-center h-40">
             <p className="text-red-400">{error}</p>
           </div>
@@ -1205,8 +1104,8 @@ const PaymentContent = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 bg-black min-h-screen">
-      <div className="bg-gray-900 rounded-lg shadow">
+    <div className="mx-auto min-h-64 max-w-4xl rounded-xl border border-white/10 bg-[#0b1115] p-4">
+      <div className="rounded-lg">
         <div className="border-b border-gray-800 p-4">
           <h2 className="text-xl font-semibold text-white">Payment History</h2>
         </div>
@@ -1327,6 +1226,9 @@ const AccountContent = () => {
           lastName: data.lastName ? data.lastName : "",
           displayName: data.username ? data.username : "",
           email: data.email ? data.email : "",
+          currentPassword: "",
+          newPassword: "",
+          confirmNewPassword: "",
         });
       } catch {
         console.log("Failed to fetch user details");
@@ -1415,31 +1317,32 @@ const AccountContent = () => {
   };
 
   return (
-    <div className="mt-10 auto flex flex-col gap-5 px-10 bg-[#121212] py-12">
+    <div className="space-y-5 rounded-xl border border-white/10 bg-[#0b1115] p-4 sm:p-6">
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-        <div className="flex gap-2 w-full">
-          <div className="flex flex-col w-1/2 gap-2">
+        <h1 className="mb-2 text-2xl font-semibold text-white">Account Settings</h1>
+        <div className="flex w-full flex-col gap-3 sm:flex-row">
+          <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">First name *</label>
             <input
               name="firstName"
               type="text"
               value={accountDetails.firstName}
               placeholder=""
-              className="p-2 rounded bg-[#333] text-blue-500/70"
+              className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
               onChange={handleInputChange}
             />
             {error.firstName && (
               <p className="text-red-500 text-sm">{error.firstName}</p>
             )}
           </div>
-          <div className="flex flex-col w-1/2 gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">Last name *</label>
             <input
               name="lastName"
               type="text"
               value={accountDetails.lastName}
               placeholder=""
-              className="p-2 rounded bg-[#333] text-blue-500/70"
+              className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
               onChange={handleInputChange}
             />
             {error.lastName && (
@@ -1453,7 +1356,7 @@ const AccountContent = () => {
           type="text"
           value={accountDetails.displayName}
           placeholder=""
-          className="p-2 rounded bg-[#333] text-blue-500/70"
+          className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
           onChange={handleInputChange}
         />
         {error.displayName && (
@@ -1470,7 +1373,7 @@ const AccountContent = () => {
           type="email"
           value={accountDetails.email}
           placeholder=""
-          className="p-2 rounded bg-[#333] text-blue-500/70"
+          className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
           onChange={handleInputChange}
         />
         {error.email && <p className="text-red-500 text-sm">{error.email}</p>}
@@ -1482,7 +1385,7 @@ const AccountContent = () => {
           name="currentPassword"
           type="password"
           value={accountDetails.currentPassword}
-          className="p-2 rounded bg-[#333] text-blue-500/70"
+          className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
           onChange={handleInputChange}
         />
         {error.currentPassword && (
@@ -1495,7 +1398,7 @@ const AccountContent = () => {
           name="newPassword"
           type="password"
           value={accountDetails.newPassword}
-          className="p-2 rounded bg-[#333] text-blue-500/70"
+          className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
           onChange={handleInputChange}
         />
         {error.newPassword && (
@@ -1514,7 +1417,7 @@ const AccountContent = () => {
         )}
         <button
           type="submit"
-          className="bg-gradient-to-b from-[#6496d3] to-[#00C7C1] text-white py-2 px-4 rounded"
+          className="mt-3 w-full rounded-md bg-gradient-to-r from-sky-500 to-cyan-400 px-5 py-3 font-semibold text-[#031015] transition-opacity hover:opacity-90 sm:w-auto"
         >
           Save changes
         </button>
