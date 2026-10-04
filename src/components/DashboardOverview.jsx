@@ -55,8 +55,6 @@ const DashboardOverview = () => {
       const results = await Promise.allSettled([
         axios.get(API_ENDPOINTS.GET_USER_DETAILS(userId), { headers }),
         axios.post(API_ENDPOINTS.GET_USER_VIDEOS, { user_id: userId }, { headers }),
-        axios.post(API_ENDPOINTS.GET_VIDEO_COUNT_99, { user_id: userId, packageType: '99' }, { headers }),
-        axios.post(API_ENDPOINTS.GET_VIDEO_COUNT_299, { user_id: userId, packageType: '299' }, { headers }),
         axios.post(API_ENDPOINTS.GET_USED_VIDEO_COUNTS, { user_id: userId }, { headers }),
       ])
 
@@ -64,17 +62,15 @@ const DashboardOverview = () => {
 
       const accountData = results[0].status === 'fulfilled' ? results[0].value.data?.result?.[0] : null
       const videosData = results[1].status === 'fulfilled' ? results[1].value.data?.result : null
-      const shortTotalData = results[2].status === 'fulfilled' ? results[2].value.data : null
-      const featureTotalData = results[3].status === 'fulfilled' ? results[3].value.data : null
-      const usedData = results[4].status === 'fulfilled' ? results[4].value.data?.result : null
+      const countData = results[2].status === 'fulfilled' ? results[2].value.data?.result : null
 
       if (accountData) setAccountName(accountData.displayName || accountData.username || accountData.firstName || 'Filmmaker')
       if (Array.isArray(videosData)) setVideos(videosData)
       setQuota({
-        shortUsed: Number(usedData?.package_99_count || 0),
-        shortTotal: Number(shortTotalData?.count_99 || 0),
-        featureUsed: Number(usedData?.package_299_count || 0),
-        featureTotal: Number(featureTotalData?.count_299 || 0),
+        shortUsed: Number(countData?.package_99_count || 0),
+        shortTotal: Number(countData?.count_99 || 0),
+        featureUsed: Number(countData?.package_299_count || 0),
+        featureTotal: Number(countData?.count_299 || 0),
       })
       setLoading(false)
     }
