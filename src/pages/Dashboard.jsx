@@ -7,6 +7,7 @@ import DashboardComponents from '../components/DashboardComponents'
 
 const Dashboard = () => {
   const [showSidebar, setShowSidebar] = React.useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
   const navigate = useNavigate()
 
   const handleMobileLogout = () => {
@@ -52,9 +53,9 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <div className='mx-auto flex min-h-[calc(100vh-4rem)] max-w-[1600px]'>
-        <aside className='sticky top-16 hidden h-[calc(100dvh-4rem)] w-60 shrink-0 border-r border-white/10 bg-[#080d10] md:block'>
-          <SideBar />
+      <div className='flex min-h-[calc(100vh-5rem)] w-full max-w-[1600px]'>
+        <aside className={`sticky top-16 hidden h-[calc(100dvh-5rem)] shrink-0 border-r border-white/10 bg-[#080d10] transition-[width] duration-200 md:block ${sidebarCollapsed ? 'w-[5rem]' : 'w-60'}`}>
+          <SideBar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((collapsed) => !collapsed)} />
         </aside>
 
         {showSidebar && (
@@ -66,7 +67,7 @@ const Dashboard = () => {
                 event.stopPropagation()
               }}
             >
-              <SideBar hidePromo hideLogout onLogout={handleMobileLogout} />
+              <SideBar hidePromo hideLogout hideToggle onLogout={handleMobileLogout} />
               <div className='absolute inset-x-0 bottom-0 z-10 border-t border-white/10 bg-[#080d10] p-4'>
                 <button
                   type='button'
