@@ -4,7 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS } from '../server/api_endpoints';
 
-const TrackedVideoPlayer = ({ video, className, onViewCountChange }) => {
+const TrackedVideoPlayer = ({ video, className, onViewCountChange, autoPlay = false }) => {
   const countedPlayback = useRef(false);
 
   const recordPlayback = async () => {
@@ -32,6 +32,9 @@ const TrackedVideoPlayer = ({ video, className, onViewCountChange }) => {
     <video
       className={className}
       controls
+      autoPlay={autoPlay}
+      muted={autoPlay}
+      playsInline
       aria-label={`Play ${video.title || 'film submission'}`}
       onPlay={recordPlayback}
       onEnded={() => { countedPlayback.current = false; }}
@@ -49,6 +52,7 @@ TrackedVideoPlayer.propTypes = {
   }).isRequired,
   className: PropTypes.string,
   onViewCountChange: PropTypes.func.isRequired,
+  autoPlay: PropTypes.bool,
 };
 
 export default TrackedVideoPlayer;

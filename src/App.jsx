@@ -15,6 +15,7 @@ import SuccessPage from './pages/Success'
 import { CartProvider } from './constants/CartContext';
 import BlogView from './pages/BlogView'
 import Specifications from './pages/Specifications'
+import Contestpage from './pages/Contestpage'
 const App = () => {
   const [cart, setCart] = useState([]);
 
@@ -28,7 +29,8 @@ const App = () => {
         <Routes>
             <Route path="/" element={<Template><Homepage/></Template>} />
             <Route path="/about" element={<Template><Aboutpage/></Template>} />
-            <Route path="/contest" element={<Template><Pricingpage/></Template>} />
+            <Route path="/contest" element={<Template><Contestpage/></Template>} />
+            {/* <Route path="/contest" element={<Template><Pricingpage/></Template>} /> */}
             <Route path="/product/:packageid" element={<Template><PackageProducts/></Template>} />
             <Route path="/blog" element={<Template><Blogpage/></Template>} />
             <Route path="/blog/view/:id" element={<Template><BlogView/></Template>}/>

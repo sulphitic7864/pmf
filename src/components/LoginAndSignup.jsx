@@ -70,7 +70,6 @@ const LoginAndSignUp = () => {
                 setLoginData(initialLoginData);
                 setTimeout(() => {
                     navigate('/my-account/');
-                    window.location.reload();
                 }, 3000);
             }
         } catch(error) {

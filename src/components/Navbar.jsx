@@ -71,16 +71,27 @@ const Navbar = () => {
 
     return (
         <>
-            <header className={`sticky top-0 z-[60] flex w-full items-center justify-between px-5 text-white transition-all duration-300 ease-in-out sm:px-8 md:px-12 lg:px-36 ${isScrolled ? 'h-[75px] bg-[rgba(18,18,18,0.88)] shadow-md backdrop-blur-sm' : 'h-[106px] bg-[rgba(18,18,18,1)]'}`}>
-                <Link to='/' className='flex items-center gap-2' onClick={() => setShowNav(false)}>
-                    <img src={logo} alt="logo" className='w-7 aspect-square' />
-                    <span className='ml-2 whitespace-nowrap text-lg font-medium'>PLACE MY FILMS</span>
+            <header className={`sticky top-0 z-[60] flex w-full items-center justify-between border-b border-white/[0.06] px-5 text-white transition-all duration-300 ease-in-out sm:px-8 md:px-10 lg:px-16 xl:px-24 ${isScrolled ? 'h-[72px] bg-[#080d10]/95 shadow-[0_10px_35px_rgba(0,0,0,0.35)] backdrop-blur-xl' : 'h-[88px] bg-[#080d10]'}`}>
+                <Link to='/' aria-label='Place My Films home' className='group flex shrink-0 items-center gap-2.5' onClick={() => setShowNav(false)}>
+                    <span className='flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/15 bg-white/[0.04] transition-colors group-hover:border-cyan-300/35 group-hover:bg-cyan-300/[0.08]'>
+                        <img src={logo} alt="" className='aspect-square w-7 object-contain' />
+                    </span>
+                    <span className='whitespace-nowrap text-[1.05rem] font-extrabold tracking-[-0.045em] sm:text-xl'>
+                        PLACE <span className='text-white'>MY FILMS</span>
+                    </span>
                 </Link>
-                <nav className='flex items-center gap-5'>
-                    <ul className='hidden items-center gap-6 md:flex lg:gap-8'>
+                <nav aria-label='Main navigation' className='flex items-center gap-3 sm:gap-5'>
+                    <ul className='hidden items-center gap-1 md:flex'>
                         {routes.map((route) => (
-                            <li key={route.path} className={`text-md transition-colors duration-200 hover:text-gray-400 ${pathname === route.path ? 'underline underline-offset-4' : ''}`}>
-                                <Link to={route.path}>{route.name}</Link>
+                            <li key={route.path}>
+                                <Link
+                                    to={route.path}
+                                    aria-current={pathname === route.path ? 'page' : undefined}
+                                    className={`relative flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition-colors duration-200 lg:px-4 ${pathname === route.path ? 'bg-cyan-300/[0.09] text-cyan-200' : 'text-white/70 hover:bg-white/[0.05] hover:text-white'}`}
+                                >
+                                    {route.name}
+                                    {pathname === route.path && <span aria-hidden='true' className='absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-gradient-to-r from-sky-400 to-teal-300' />}
+                                </Link>
                             </li>
                         ))}
                     </ul>
@@ -89,21 +100,35 @@ const Navbar = () => {
                         aria-label={showNav ? 'Close navigation menu' : 'Open navigation menu'}
                         aria-expanded={showNav}
                         onClick={() => setShowNav((open) => !open)}
-                        className='flex h-10 w-10 items-center justify-center rounded-md transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-cyan-400 md:hidden'
+                        className='flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white/85 transition-colors hover:border-cyan-300/30 hover:bg-cyan-300/[0.08] hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400 md:hidden'
                     >
                         <MdMenu size={28} />
                     </button>
                     <div className='relative hidden md:block'>
                         {!user ? (
                             <>
-                                <MdOutlineLogin size={25} onClick={() => setShowModal(!showModal)} className='cursor-pointer' />
+                                <button
+                                    type='button'
+                                    aria-label='Log in'
+                                    onClick={() => setShowModal(!showModal)}
+                                    className='flex min-h-10 items-center gap-2 rounded-full border border-cyan-300/45 bg-cyan-300/[0.06] px-4 text-sm font-semibold text-cyan-100 transition-colors hover:bg-cyan-300/[0.13] focus:outline-none focus:ring-2 focus:ring-cyan-300'
+                                >
+                                    <MdOutlineLogin size={19} />
+                                    <span>Log in</span>
+                                </button>
                                 {showModal && <LoginModal showModal={showModal} setShowModal={setShowModal} />}
                             </>
                         ) : (
                             <>
-                                <div className='flex aspect-square w-8 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-white' onClick={() => setShowModal(!showModal)}>
-                                    <img src={profileImg} alt="" />
-                                </div>
+                                <button
+                                    type='button'
+                                    aria-label='Open account menu'
+                                    aria-expanded={showModal}
+                                    onClick={() => setShowModal(!showModal)}
+                                    className='flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-cyan-300/40 bg-gradient-to-br from-cyan-300/20 to-teal-300/10 p-0.5 transition-shadow hover:shadow-[0_0_18px_rgba(34,211,238,0.22)] focus:outline-none focus:ring-2 focus:ring-cyan-300'
+                                >
+                                    <img src={profileImg} alt="" className='h-full w-full rounded-full object-cover' />
+                                </button>
                                 {showModal && <ProfileModal showModal={showModal} setShowModal={setShowModal} />}
                             </>
                         )}
@@ -122,7 +147,7 @@ const Navbar = () => {
                 aria-label='Mobile navigation'
                 aria-hidden={!showNav}
                 inert={!showNav ? '' : undefined}
-                className={`fixed right-0 top-0 z-[80] flex h-screen h-[100dvh] max-h-[100dvh] w-[min(88vw,22rem)] flex-col overflow-y-auto overscroll-contain border-l border-white/10 bg-[#101314] text-white shadow-2xl transition-transform duration-300 ease-out md:hidden ${showNav ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`fixed right-0 top-0 z-[80] flex h-screen h-[100dvh] max-h-[100dvh] w-[min(88vw,22rem)] flex-col overflow-y-auto overscroll-contain border-l border-white/10 bg-[#0b1115] text-white shadow-2xl transition-transform duration-300 ease-out md:hidden ${showNav ? 'translate-x-0' : 'translate-x-full'}`}
             >
                 <div className='flex h-[75px] shrink-0 items-center justify-between border-b border-white/10 px-5'>
                     <Link to='/' className='flex items-center gap-2' onClick={() => setShowNav(false)}>
@@ -133,7 +158,7 @@ const Navbar = () => {
                         type='button'
                         aria-label='Close navigation menu'
                         onClick={() => setShowNav(false)}
-                        className='flex h-10 w-10 items-center justify-center rounded-md text-gray-300 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-400'
+                        className='flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-gray-300 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-400'
                     >
                         <MdClose size={25} />
                     </button>
@@ -145,7 +170,8 @@ const Navbar = () => {
                             key={route.path}
                             to={route.path}
                             onClick={() => setShowNav(false)}
-                            className={`flex min-h-12 items-center justify-between rounded-lg px-4 text-base transition-colors hover:bg-white/[0.06] hover:text-cyan-200 ${pathname === route.path ? 'bg-cyan-400/10 text-cyan-300' : 'text-gray-200'}`}
+                            aria-current={pathname === route.path ? 'page' : undefined}
+                            className={`flex min-h-12 items-center justify-between rounded-xl border px-4 text-base transition-colors hover:bg-white/[0.06] hover:text-cyan-200 ${pathname === route.path ? 'border-cyan-300/20 bg-cyan-400/10 text-cyan-200' : 'border-transparent text-gray-200'}`}
                         >
                             {route.name}
                             <span aria-hidden='true' className='text-gray-500'>›</span>

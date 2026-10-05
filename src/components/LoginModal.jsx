@@ -54,7 +54,6 @@ const LoginModal = ({ showModal, setShowModal }) => {
         setTimeout(() => {
           setShowModal(false);
           navigate("/my-account/");
-          window.location.reload();
         }, 3000);
       }
     } catch (error) {

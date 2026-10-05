@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import React from 'react'
 import { images } from '../constants/constants'
+import { Link } from 'react-router-dom'
+
 const Aboutpage = () => {
   return (
     <div className='w-full min-h-screen'>
@@ -10,29 +12,81 @@ const Aboutpage = () => {
         </div>
       </div>
 
-      <div className='w-full flex flex-col md:flex-row h-auto bg-black'>
-      <div className='w-full md:w-1/2 flex justify-end font-semibold md:pl-10 lg:pl-[13%] pt-16 px-10 md:px-0 overflow-hidden'>
-            <motion.div
-            initial={{ opacity: 0,x:-300 }}
-            whileInView={{ opacity: 1,x:0}}
-            transition={{ duration: 1 }}
-            viewport={{ once: true }}
-            >
-                <h2 className='text-white/80 text-[2rem] font-normal leading-[50px] scale-y-[0.83]'>
-                Place My Films enable Independent Filmmakers the ability to maximize revenue for their films. Unlike distributors that hold your films hostage with long-term contracts, making more money off of your films than you do, we make sure that you are the primary bread winner for your art. No backend fees, no percentage, and no ownership over your film. As a film aggregator, we walk your film directly to the streaming service’s door for a one-time fee, giving you the opportunity to earn every dime of your money! Because to us… Your success is our success!
-                </h2>
-            </motion.div>
-        </div>
+      <section className='relative isolate overflow-hidden bg-[#05090c] px-5 py-16 text-white sm:px-8 md:py-20 lg:px-12 lg:py-24'>
+        <div className='pointer-events-none absolute -left-40 top-20 -z-10 h-96 w-96 rounded-full bg-cyan-500/10 blur-[120px]' />
+        <div className='pointer-events-none absolute -right-40 bottom-0 -z-10 h-96 w-96 rounded-full bg-teal-400/10 blur-[120px]' />
 
-        <div className='w-full md:w-1/2 relative h-full px-10 md:px-0  md:pl-8 md:pr-[15%] py-10 md:mt-16 bg-black'>
-            <motion.img
-            initial={{ opacity: 0,scale:0.4 }}
-            whileInView={{ opacity: 1,scale:1 }}
-            transition={{ duration: 1.2 }}
+        <div className='mx-auto grid max-w-7xl items-center gap-12 md:grid-cols-[1.05fr_0.95fr] lg:gap-20'>
+          <motion.div
+            initial={{ opacity: 0, x: -36 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.75 }}
             viewport={{ once: true }}
-            src={images.cameraman} alt="" className='w-full relative z-20 h-full bg-cover' />
+            className='order-2 md:order-1'
+          >
+            <div className='relative mx-auto max-w-[560px]'>
+              <div className='absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-cyan-400/30 via-transparent to-teal-300/20 blur-xl' />
+              <div className='relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#10191d] shadow-[0_28px_90px_rgba(0,0,0,0.55)]'>
+                <img
+                  src={images.cameraman}
+                  alt='Independent filmmaker working behind a camera'
+                  className='aspect-[4/5] w-full object-cover object-center'
+                />
+                <div className='absolute inset-0 bg-gradient-to-t from-[#020607]/85 via-transparent to-transparent' />
+                <div className='absolute bottom-5 left-5 right-5 sm:bottom-7 sm:left-7 sm:right-7'>
+                  <p className='text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300'>Independent stories deserve to be seen</p>
+                  <p className='mt-2 text-xl font-semibold text-white sm:text-2xl'>Your film. Your rights. Your success.</p>
+                </div>
+              </div>
+              <div aria-hidden='true' className='absolute -bottom-5 -right-4 h-20 w-20 rounded-2xl border border-cyan-300/20 sm:-right-6 sm:h-24 sm:w-24' />
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 36 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.75 }}
+            viewport={{ once: true }}
+            className='order-1 md:order-2'
+          >
+            <p className='flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.26em] text-cyan-300 sm:text-sm'>
+              <span aria-hidden='true' className='h-px w-9 bg-gradient-to-r from-cyan-400 to-teal-300' />
+              Built for independent filmmakers
+            </p>
+            <h2 className='mt-6 text-4xl font-black leading-[0.98] tracking-[-0.055em] sm:text-5xl lg:text-6xl'>
+              Your film should work for <span className='bg-gradient-to-r from-[#00B1DB] to-[#01F8DF] bg-clip-text text-transparent'>you.</span>
+            </h2>
+            <p className='mt-7 text-base leading-relaxed text-white/75 sm:text-lg'>
+              Place My Films helps independent filmmakers maximize revenue from their films. Unlike distributors that lock films into long-term contracts, we put you first: no backend fees, no percentage of your earnings, and no ownership over your film.
+            </p>
+            <p className='mt-4 text-base leading-relaxed text-white/75 sm:text-lg'>
+              As a film aggregator, we take your film directly to streaming services for a one-time fee, so you have the opportunity to earn every dime. Because to us, your success is our success.
+            </p>
+
+            <div className='mt-7 grid gap-3 sm:grid-cols-3'>
+              <div className='rounded-xl border border-white/10 bg-white/[0.04] p-4'>
+                <p className='text-sm font-bold text-cyan-300'>No backend fees</p>
+                <p className='mt-1 text-xs leading-relaxed text-white/60'>Keep more of what your film earns.</p>
+              </div>
+              <div className='rounded-xl border border-white/10 bg-white/[0.04] p-4'>
+                <p className='text-sm font-bold text-cyan-300'>No percentage</p>
+                <p className='mt-1 text-xs leading-relaxed text-white/60'>Your revenue stays yours.</p>
+              </div>
+              <div className='rounded-xl border border-white/10 bg-white/[0.04] p-4'>
+                <p className='text-sm font-bold text-cyan-300'>You keep ownership</p>
+                <p className='mt-1 text-xs leading-relaxed text-white/60'>Your creative work remains yours.</p>
+              </div>
+            </div>
+
+            <Link
+              to='/contest'
+              className='mt-8 inline-flex min-h-12 items-center justify-center rounded-full bg-gradient-to-b from-sky-500 to-[#00D0B8] px-7 py-3 text-sm font-semibold uppercase text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-4 focus:ring-offset-[#05090c]'
+            >
+              Explore film submissions
+            </Link>
+          </motion.div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

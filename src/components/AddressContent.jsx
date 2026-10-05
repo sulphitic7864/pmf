@@ -5,6 +5,8 @@ import { API_ENDPOINTS } from '../server/api_endpoints';
 import { jwtDecode } from 'jwt-decode';
 import { Country, State } from 'country-state-city';
 
+const inputClassName = 'w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400';
+
 const AddressContent = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -311,8 +313,8 @@ const AddressContent = () => {
           <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">First name *</label>
             <input
-              className={`p-2 rounded bg-[#333] text-white ${
-                error.first_name ? "border border-red-500" : ""
+              className={`${inputClassName} ${
+                error.first_name ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
               }`}
               type="text"
               name="first_name"
@@ -327,8 +329,8 @@ const AddressContent = () => {
           <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">Last name *</label>
             <input
-              className={`p-2 rounded bg-[#333] text-white ${
-                error.last_name ? "border border-red-500" : ""
+              className={`${inputClassName} ${
+                error.last_name ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
               }`}
               type="text"
               name="last_name"
@@ -344,7 +346,7 @@ const AddressContent = () => {
 
         <label className="text-white">Company name</label>
         <input
-          className="p-2 rounded bg-[#333] text-white"
+          className={inputClassName}
           type="text"
           name="company_name"
           value={addressDetails.company_name}
@@ -353,7 +355,7 @@ const AddressContent = () => {
 
         <label className="text-white">Country / Region *</label>
         <select
-          className="p-2 rounded bg-[#333] text-white"
+          className={inputClassName}
           name="country"
           value={addressDetails.country}
           onChange={handleInputChange}
@@ -369,8 +371,8 @@ const AddressContent = () => {
 
         <label className="text-white">Street address line 1 *</label>
         <input
-          className={`p-2 rounded bg-[#333] text-white ${
-            error.address1 ? "border border-red-500" : ""
+          className={`${inputClassName} ${
+            error.address1 ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
           }`}
           type="text"
           name="address1"
@@ -384,7 +386,7 @@ const AddressContent = () => {
 
         <label className="text-white">Street address line 2</label>
         <input
-          className="p-2 rounded bg-[#333] text-white"
+          className={inputClassName}
           type="text"
           name="address2"
           value={addressDetails.address2}
@@ -395,8 +397,8 @@ const AddressContent = () => {
           <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">Town / City *</label>
             <input
-              className={`p-2 rounded bg-[#333] text-white ${
-                error.city ? "border border-red-500" : ""
+              className={`${inputClassName} ${
+                error.city ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
               }`}
               type="text"
               name="city"
@@ -411,8 +413,8 @@ const AddressContent = () => {
           <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">State *</label>
             <select
-              className={`p-2 rounded bg-[#333] text-white ${
-                error.state ? "border border-red-500" : ""
+              className={`${inputClassName} ${
+                error.state ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
               }`}
               name="state"
               value={addressDetails.state}
@@ -436,8 +438,8 @@ const AddressContent = () => {
           <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">ZIP Code *</label>
             <input
-              className={`p-2 rounded bg-[#333] text-white ${
-                error.zip_code ? "border border-red-500" : ""
+              className={`${inputClassName} ${
+                error.zip_code ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
               }`}
               type="text"
               name="zip_code"
@@ -452,8 +454,8 @@ const AddressContent = () => {
           <div className="flex w-full flex-col gap-2 sm:w-1/2">
             <label className="text-white">Phone *</label>
             <input
-              className={`p-2 rounded bg-[#333] text-white ${
-                error.phone ? "border border-red-500" : ""
+              className={`${inputClassName} ${
+                error.phone ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
               }`}
               type="tel"
               name="phone"
@@ -469,7 +471,7 @@ const AddressContent = () => {
 
         <label className="text-white">Email address *</label>
         <input
-          className="p-2 rounded bg-[#333] text-white"
+          className={`${inputClassName} disabled:cursor-not-allowed disabled:opacity-60`}
           type="email"
           name="email_add"
           value={addressDetails.email_add}
@@ -483,7 +485,7 @@ const AddressContent = () => {
 
         <label className="text-white">Order Notes</label>
         <textarea
-          className="p-2 rounded bg-[#333] text-white"
+          className={`${inputClassName} min-h-24 resize-y`}
           name="note"
           value={addressDetails.note}
           onChange={handleInputChange}
@@ -493,7 +495,7 @@ const AddressContent = () => {
         <button
           type="submit"
           disabled={submitting}
-          className=" bg-gradient-to-b from-[#6496d3] to-[#00C7C1] mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
+          className="mt-4 w-full rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-5 py-3 font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:cursor-wait disabled:opacity-60 sm:w-auto"
         >
           {submitting
             ? "Updating..."

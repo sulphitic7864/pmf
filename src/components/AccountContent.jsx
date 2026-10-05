@@ -204,7 +204,7 @@ const AccountContent = () => {
         {error.email && <p className="text-red-500 text-sm">{error.email}</p>}
         <h2 className="text-white text-2xl font-bold mt-5">Password change</h2>
         <label className="text-white">
-          Current password (leave blank to leave unchanged)
+          Current password
         </label>
         <input
           name="currentPassword"
@@ -217,7 +217,7 @@ const AccountContent = () => {
           <p className="text-red-500 text-sm">{error.currentPassword}</p>
         )}
         <label className="text-white">
-          New password (leave blank to leave unchanged)
+          New password
         </label>
         <input
           name="newPassword"
@@ -234,7 +234,7 @@ const AccountContent = () => {
           name="confirmNewPassword"
           type="password"
           value={accountDetails.confirmNewPassword}
-          className="p-2 rounded bg-[#333] text-blue-500/70"
+          className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
           onChange={handleInputChange}
         />
         {error.confirmNewPassword && (

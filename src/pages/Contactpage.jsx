@@ -185,7 +185,7 @@ const Contactpage = () => {
                                         name='firstName' 
                                         value={contactData.firstName}
                                         placeholder='First Name' 
-                                        className='w-full rounded-md border border-white/10 bg-[#333] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
+                                        className='w-full rounded-md border border-white/10 bg-[#242829] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
                                         onChange={handleContactChange}
                                     />
                                     {error.firstName && <p className='text-red-500'>{error.firstName}</p>}
@@ -196,7 +196,7 @@ const Contactpage = () => {
                                         name='lastName' 
                                         value={contactData.lastName}
                                         placeholder='Last Name' 
-                                        className='w-full rounded-md border border-white/10 bg-[#333] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
+                                        className='w-full rounded-md border border-white/10 bg-[#242829] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
                                         onChange={handleContactChange}
                                     />
                                     {error.lastName && <p className='text-red-500'>{error.lastName}</p>}
@@ -207,7 +207,7 @@ const Contactpage = () => {
                                     <select
                                         name='countryCode'
                                         value={contactData.countryCode}
-                                        className='w-full rounded-md border border-white/10 bg-[#333] p-3 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400'
+                                        className='w-full rounded-md border border-white/10 bg-[#242829] p-3 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400'
                                         onChange={handleContactChange}
                                     >
                                         {countries.map((country) => (
@@ -223,7 +223,7 @@ const Contactpage = () => {
                                         name='phoneNumber' 
                                         value={contactData.phoneNumber}
                                         placeholder='Phone Number' 
-                                        className='w-full rounded-md border border-white/10 bg-[#333] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
+                                        className='w-full rounded-md border border-white/10 bg-[#242829] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
                                         onChange={handleContactChange}
                                     />
                                     {error.phoneNumber && <p className='text-red-500'>{error.phoneNumber}</p>}
@@ -235,7 +235,7 @@ const Contactpage = () => {
                                     name='email' 
                                     value={contactData.email}
                                     placeholder='Email' 
-                                    className='w-full rounded-md border border-white/10 bg-[#333] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 read-only:cursor-not-allowed read-only:opacity-70' 
+                                    className='w-full rounded-md border border-white/10 bg-[#242829] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 read-only:cursor-not-allowed read-only:opacity-70' 
                                     onChange={handleContactChange}
                                     readOnly={!!contactData.email}
                                 />
@@ -247,7 +247,7 @@ const Contactpage = () => {
                                     name='message' 
                                     value={contactData.message}
                                     placeholder='Questions & Comments' 
-                                    className='w-full resize-y rounded-md border border-white/10 bg-[#333] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
+                                    className='w-full resize-y rounded-md border border-white/10 bg-[#242829] p-3 text-white placeholder:text-gray-400 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400' 
                                     onChange={handleContactChange}
                                 />
                                 {error.message && <p className='text-red-500'>{error.message}</p>}

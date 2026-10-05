@@ -36,11 +36,18 @@ const formatSubmissionDate = (date) => {
     : parsedDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
+const getSubmissionTimestamp = (video) => {
+  const date = video.createdAt || video.created_at || video.uploadedAt || video.uploaded_at
+  const timestamp = date ? new Date(date).getTime() : Number.NaN
+  return Number.isNaN(timestamp) ? null : timestamp
+}
+
 const DashboardOverview = () => {
   const { pathname } = useLocation()
   const [accountName, setAccountName] = useState('Filmmaker')
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
+  const [playingVideoUrl, setPlayingVideoUrl] = useState(null)
   const token = localStorage.getItem('token')
 
   useEffect(() => {
@@ -79,7 +86,15 @@ const DashboardOverview = () => {
     return () => { isActive = false }
   }, [token])
 
-  const recentVideos = [...videos].slice(-3).reverse()
+  const recentVideos = videos
+    .map((video, index) => ({ video, index, timestamp: getSubmissionTimestamp(video) }))
+    .sort((a, b) => {
+      if (a.timestamp !== null && b.timestamp !== null) return b.timestamp - a.timestamp
+      if (a.timestamp !== null) return -1
+      if (b.timestamp !== null) return 1
+      return b.index - a.index
+    })
+    .slice(0, 2)
   const updateViewCount = (videoId, viewCount) => {
     setVideos((currentVideos) => currentVideos.map((video) => (
       video.id === videoId ? { ...video, viewCount } : video
@@ -204,25 +219,65 @@ const DashboardOverview = () => {
       </div>
 
       <aside className='min-w-0 space-y-5'>
-        <section className='rounded-xl border border-white/10 bg-[#0b1115] p-4'>
+        <section className='rounded-xl border border-white/10 bg-[#0b1115] p-4 shadow-[0_16px_45px_rgba(0,0,0,0.18)]'>
           <div className='flex items-center justify-between gap-3 border-b border-white/10 pb-3'>
-            <h2 className='text-sm font-semibold'>Recent submissions</h2>
-            <Link to='/my-account/submissions' className='text-xs text-cyan-300 hover:text-cyan-100'>View all</Link>
+            <div>
+              <h2 className='text-sm font-semibold'>Recent submissions</h2>
+              <p className='mt-1 text-[11px] text-gray-500'>Your latest 2 films</p>
+            </div>
+            <Link to='/my-account/submissions' className='inline-flex items-center gap-1 rounded-full border border-cyan-300/20 bg-cyan-300/[0.06] px-2.5 py-1.5 text-[11px] font-medium text-cyan-200 transition-colors hover:border-cyan-300/40 hover:bg-cyan-300/10'>
+              View all <ArrowRight size={12} />
+            </Link>
           </div>
           {loading ? (
             <p className='py-6 text-center text-xs text-gray-500'>Loading uploads...</p>
           ) : recentVideos.length ? (
-            <div className='divide-y divide-white/10'>
-              {recentVideos.map((video, index) => (
-                <div key={video.id || video.url || index} className='flex items-center gap-3 py-3'>
-                  <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-cyan-400/10 text-cyan-300'><MonitorPlay size={19} /></span>
-                  <div className='min-w-0 flex-1'>
-                    <p className='truncate text-xs font-medium'>{video.title || getFileName(video.url, `Film ${videos.length - index}`)}</p>
-                    <p className='mt-1 truncate text-[11px] text-gray-400'>{video.festivalTitle || 'Free film submission'}</p>
-                    <p className='mt-1 truncate text-[11px] text-emerald-300'>{(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}</p>
-                    <p className='mt-1 inline-flex items-center gap-1 text-[11px] text-cyan-200'><Eye size={12} /> {Number(video.viewCount || 0)} views</p>
-                    <p className='mt-1 truncate text-[11px] text-gray-500'>{formatSubmissionDate(video.createdAt)}</p>
+            <div className='space-y-2.5 pt-3'>
+              {recentVideos.map(({ video }, index) => (
+                <div
+                  key={video.id || video.url || index}
+                  className='group relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-br from-white/[0.045] to-white/[0.015] p-3 transition-colors hover:border-cyan-300/20 hover:from-cyan-300/[0.07]'
+                >
+                  <div aria-hidden='true' className='absolute inset-y-3 left-0 w-0.5 rounded-full bg-gradient-to-b from-sky-400 to-teal-300 opacity-70' />
+                  <div className='flex items-start gap-3 pl-1'>
+                    {video.url ? (
+                      <button
+                        type='button'
+                        aria-label={`${playingVideoUrl === video.url ? 'Close' : 'Play'} ${video.title || 'film submission'}`}
+                        aria-expanded={playingVideoUrl === video.url}
+                        onClick={() => setPlayingVideoUrl((activeUrl) => activeUrl === video.url ? null : video.url)}
+                        className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-300/[0.08] text-cyan-200 transition-colors hover:border-cyan-300/35 hover:bg-cyan-300/[0.13] focus:outline-none focus:ring-2 focus:ring-cyan-300'
+                      >
+                        <MonitorPlay size={18} />
+                      </button>
+                    ) : (
+                      <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-300/[0.08] text-cyan-200'>
+                        <MonitorPlay size={18} />
+                      </span>
+                    )}
+                    <div className='min-w-0 flex-1'>
+                      <p className='truncate text-xs font-semibold text-white'>{video.title || getFileName(video.url, `Film ${videos.length - index}`)}</p>
+                      <p className='mt-1 truncate text-[11px] text-gray-400'>{video.festivalTitle || `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`}</p>
+                      <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
+                        <span className='inline-flex items-center gap-1 rounded-full border border-emerald-300/15 bg-emerald-300/[0.06] px-2 py-0.5 text-[10px] font-medium text-emerald-200'>
+                          <CheckCircle2 size={11} />
+                          {(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}
+                        </span>
+                        <span className='inline-flex items-center gap-1 text-[10px] text-cyan-200'>
+                          <Eye size={11} /> {Number(video.viewCount || 0)} views
+                        </span>
+                      </div>
+                      <p className='mt-2 truncate text-[10px] text-gray-500'>{formatSubmissionDate(video.createdAt || video.created_at || video.uploadedAt || video.uploaded_at)}</p>
+                    </div>
                   </div>
+                  {video.url && playingVideoUrl === video.url && (
+                    <TrackedVideoPlayer
+                      video={video}
+                      autoPlay
+                      className='mt-3 aspect-video w-full rounded-lg bg-black'
+                      onViewCountChange={updateViewCount}
+                    />
+                  )}
                 </div>
               ))}
             </div>

@@ -6,107 +6,86 @@ import { FaFacebookF } from "react-icons/fa";
 import { BsInstagram } from "react-icons/bs";
 import { SiTiktok } from "react-icons/si";
 import { TfiYoutube } from "react-icons/tfi";
+import { Link } from "react-router-dom";
+
+const footerLinks = [
+  { label: "Home", to: "/" },
+  { label: "About Us", to: "/about" },
+  { label: "Contest", to: "/contest" },
+  { label: "Blog", to: "/blog" },
+  { label: "Contact", to: "/contact" },
+];
 
 const Footer = () => {
   return (
-    <div className="w-full lg:h-72 grid gap-5 md:gap-0 sm:grid-cols-2 lg:grid-cols-3 md:px-32 py-10" style={{ backgroundColor: "rgba(18,18,18,1)" }}>
-      {/* Logo Section */}
-      <div className="w-full h-full flex flex-col items-center md:items-start justify-between pt-10">
-        <img src={images.logo} alt="logo" className="w-16" />
-        <h1 className="text-white text-sm">
-          &copy; {new Date().getFullYear()} Place My Films. All Rights Reserved
-        </h1>
-      </div>
-
-      {/* Contact Information Section */}
-      <div className="text-white text-center flex flex-col gap-4 justify-center">
-        <h1 className="text-3xl font-bold">Contact Information</h1>
-        <h2 className="flex items-center justify-center text-md gap-1">
-          <BiNavigation /> P.O. Box 3225 Rock Hill, SC 29732
-        </h2>
-        <a
-          href="mailto:help@placemyfilms.com"
-          className="flex items-center justify-center gap-1 underline text-md"
-        >
-          <MdEmail /> help@placemyfilms.com
-        </a>
-      </div>
-
-      {/* Links and Social Media Section */}
-      <div className="flex flex-col justify-between items-center md:items-end pt-12">
-        <div className="flex flex-wrap md:flex-nowrap md:justify-end gap-4 md:w-2/3">
-          {["Home", ["About", "Us"], "Contest", "Blog", ["Contact", "Us"]].map(
-            (route, index) => (
-              <a
-                key={index}
-                href={
-                  Array.isArray(route)
-                    ? route[0] === "About"
-                      ? "/about"
-                      : "/contact"
-                    : route === "Home"
-                    ? "/"
-                    : route === "Pricing"
-                    ? "/pricing"
-                    : "/blog"
-                }
-                className="text-white text-md underline cursor-pointer hover:text-gray-400 transition-colors"
-              >
-                {Array.isArray(route) ? (
-                  <div className="text-center">
-                    <span className="block">{route[0]}</span>
-                    <span className="block">{route[1]}</span>
-                  </div>
-                ) : (
-                  route
-                )}
-              </a>
-            )
-          )}
+    <footer className="relative overflow-hidden border-t border-cyan-300/15 bg-[#080d10] text-white">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
+      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 sm:px-8 md:grid-cols-2 lg:grid-cols-[1.15fr_1fr_1fr] lg:gap-14 lg:px-10 lg:py-14">
+        <div className="flex flex-col items-center text-center md:items-start md:text-left">
+          <Link to="/" aria-label="Place My Films home" className="group inline-flex items-center gap-3">
+            <img src={images.logo} alt="" className="h-11 w-11 object-contain transition-transform duration-300 group-hover:scale-105" />
+            <span className="text-xl font-extrabold tracking-[-0.045em] sm:text-2xl">
+              PLACE <span className="text-white">MY FILMS</span>
+            </span>
+          </Link>
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/55">
+            Helping independent filmmakers bring their stories to the audiences they deserve.
+          </p>
+          <p className="mt-8 text-xs text-white/40">
+            © {new Date().getFullYear()} Place My Films. All rights reserved.
+          </p>
         </div>
 
-        {/* Social Media Icons */}
-        <div className="flex pt-5 justify-center md:justify-end gap-3">
-          <FaFacebookF
-            size={20}
-            className="text-white cursor-pointer hover:text-gray-400 transition-colors"
-            onClick={() =>
-              window.open(
-                "https://web.facebook.com/placemyfilms?_rdc=1&_rdr",
-                "_blank"
-              )
-            }
-          />
-          <BsInstagram
-            size={20}
-            className="text-white cursor-pointer hover:text-gray-400 transition-colors"
-            onClick={() =>
-              window.open(
-                "https://www.instagram.com/placemyfilms/",
-                "_blank"
-              )
-            }
-          />
-          <SiTiktok
-            size={20}
-            className="text-white cursor-pointer hover:text-gray-400 transition-colors"
-            onClick={() =>
-              window.open("https://www.tiktok.com/@placemyfilms", "_blank")
-            }
-          />
-          <TfiYoutube
-            size={20}
-            className="text-white cursor-pointer hover:text-gray-400 transition-colors"
-            onClick={() =>
-              window.open(
-                "https://www.youtube.com/channel/UC6dQ8Wn_Ng5H_t2tAAjDHFg",
-                "_blank"
-              )
-            }
-          />
+        <div className="text-center md:text-left">
+          <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-white">Get in touch</h2>
+          <div className="mt-5 space-y-4">
+            <p className="flex items-start justify-center gap-3 text-sm leading-relaxed text-white/65 md:justify-start">
+              <BiNavigation aria-hidden="true" className="mt-0.5 shrink-0 text-lg text-cyan-300" />
+              <span>P.O. Box 3225<br />Rock Hill, SC 29732</span>
+            </p>
+            <a
+              href="mailto:help@placemyfilms.com"
+              className="inline-flex items-center justify-center gap-3 text-sm text-white/70 transition-colors hover:text-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-300 md:justify-start"
+            >
+              <MdEmail aria-hidden="true" className="text-lg text-cyan-300" />
+              help@placemyfilms.com
+            </a>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center md:col-span-2 md:flex-row md:items-start md:justify-between lg:col-span-1 lg:flex-col lg:items-start lg:justify-start">
+          <div>
+            <h2 className="text-center text-sm font-bold uppercase tracking-[0.18em] text-white md:text-left">Explore</h2>
+            <nav aria-label="Footer navigation" className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-3 md:justify-start">
+              {footerLinks.map(({ label, to }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="text-sm text-white/60 transition-colors hover:text-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          <div className="mt-6 flex items-center gap-3 lg:mt-7">
+            <a href="https://web.facebook.com/placemyfilms?_rdc=1&_rdr" target="_blank" rel="noreferrer" aria-label="Place My Films on Facebook" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/65 transition-all hover:border-cyan-300/40 hover:bg-cyan-300/10 hover:text-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-300">
+              <FaFacebookF size={16} aria-hidden="true" />
+            </a>
+            <a href="https://www.instagram.com/placemyfilms/" target="_blank" rel="noreferrer" aria-label="Place My Films on Instagram" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/65 transition-all hover:border-cyan-300/40 hover:bg-cyan-300/10 hover:text-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-300">
+              <BsInstagram size={16} aria-hidden="true" />
+            </a>
+            <a href="https://www.tiktok.com/@placemyfilms" target="_blank" rel="noreferrer" aria-label="Place My Films on TikTok" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/65 transition-all hover:border-cyan-300/40 hover:bg-cyan-300/10 hover:text-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-300">
+              <SiTiktok size={15} aria-hidden="true" />
+            </a>
+            <a href="https://www.youtube.com/channel/UC6dQ8Wn_Ng5H_t2tAAjDHFg" target="_blank" rel="noreferrer" aria-label="Place My Films on YouTube" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/65 transition-all hover:border-cyan-300/40 hover:bg-cyan-300/10 hover:text-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-300">
+              <TfiYoutube size={16} aria-hidden="true" />
+            </a>
+          </div>
         </div>
       </div>
-    </div>
+    </footer>
   );
 };
 

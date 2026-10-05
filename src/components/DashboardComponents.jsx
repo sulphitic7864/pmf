@@ -7,9 +7,10 @@ import AccountContent from './AccountContent';
 
 const DashboardComponents = () => {
   const { pathname } = useLocation();
+  const accountPath = pathname.replace(/\/+$/, '') || '/';
 
-  switch (pathname) {
-    case '/my-account/':
+  switch (accountPath) {
+    case '/my-account':
       return <DashboardOverview />;
     case '/my-account/orders':
       return <OrderContent />;

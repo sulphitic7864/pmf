@@ -41,7 +41,7 @@ const SideBar = ({ collapsed = false, hidePromo = false, hideLogout = false, hid
                 className={`group flex min-h-11 items-center rounded-r-lg border-l-[3px] text-sm transition-colors ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'} ${isActive ? 'border-cyan-400 bg-gradient-to-r from-cyan-400/15 to-transparent text-cyan-200' : 'border-transparent text-gray-300 hover:bg-white/[0.04] hover:text-white'}`}
             >
                 <Icon size={18} className={isActive ? 'text-cyan-300' : 'text-gray-400 group-hover:text-cyan-300'} />
-                <span className={collapsed ? 'sr-only' : ''}>{name}</span>
+                <span className={`whitespace-nowrap ${collapsed ? 'sr-only' : ''}`}>{name}</span>
             </Link>
         )
     })

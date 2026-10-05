@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS } from '../server/api_endpoints';
 import { jwtDecode } from 'jwt-decode';
@@ -16,6 +16,7 @@ const OrderContent = () => {
   const [selectedFile, setSelectedFile] = useState();
   const [currentPackageType, setCurrentPackageType] = useState(null);
   const [filmTitle, setFilmTitle] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState('');
   const [videos99, setVideos99] = useState([]);
   const [videos299, setVideos299] = useState([]);
@@ -55,30 +56,28 @@ const OrderContent = () => {
     }
   }, []);
 
+  const refreshVideos = useCallback(async () => {
+    const response = await axios.post(
+      API_ENDPOINTS.GET_USER_VIDEOS,
+      { user_id: userID },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    if (!response.data.status || !Array.isArray(response.data.result)) {
+      throw new Error(response.data.message || "Unable to refresh your film submissions.");
+    }
+
+    setVideos99(response.data.result.filter((video) => video.packageType === "99"));
+    setVideos299(response.data.result.filter((video) => video.packageType === "299"));
+  }, [userID]);
+
   // Fetch videos
   useEffect(() => {
     if (!userID) return;
 
     const getVideosByUserId = async () => {
       try {
-        const requestBody = { user_id: userID };
-        const response = await axios.post(
-          API_ENDPOINTS.GET_USER_VIDEOS,
-          requestBody,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.data.status) {
-          const videos = response.data.result;
-          const filtered99 = videos.filter((video) => video.packageType === "99");
-          const filtered299 = videos.filter((video) => video.packageType === "299");
-          setVideos99(filtered99);
-          setVideos299(filtered299);
-        }
+          await refreshVideos();
       } catch (error) {
         console.error("Error fetching videos:", error);
       } finally {
@@ -87,15 +86,17 @@ const OrderContent = () => {
     };
 
     getVideosByUserId();
-  }, [userID]);
+  }, [userID, refreshVideos]);
 
   const handleDrop = (acceptedFiles) => {
     setSelectedFile(acceptedFiles[0]);
+    setUploadSuccess(false);
   };
 
   const handleOpenModal = (packageType) => {
     setCurrentPackageType(packageType);
     setFilmTitle('');
+    setUploadSuccess(false);
     setShowModal(true);
   };
 
@@ -104,6 +105,7 @@ const OrderContent = () => {
     setSelectedFile(undefined);
     setCurrentPackageType(null);
     setFilmTitle('');
+    setUploadSuccess(false);
   };
 
   const handleSubmit = async () => {
@@ -141,22 +143,25 @@ const OrderContent = () => {
 
       const response = await axios.post(API_ENDPOINTS.UPLOAD_VIDEO, formData);
 
-      if (response.data.response_code === 200) {
+      if (response.data.response_code === 200 || response.data.status === true) {
         toast.success("✅ File uploaded successfully!", {
           position: "top-right",
           autoClose: 3000,
         });
-
-        setTimeout(() => {
-          handleCloseModal();
-        }, 2000);
-
+        setUploadSuccess(true);
         setSelectedFile(undefined);
+        try {
+          await refreshVideos();
+        } catch (refreshError) {
+          console.error("Film uploaded, but submissions could not be refreshed:", refreshError);
+          toast.warning("Your film was uploaded, but the list could not be refreshed. Reload the page to see it.", {
+            position: "top-right",
+            autoClose: 5000,
+          });
+        }
         setUploadLoading(false);
-
-        setTimeout(() => {
-          window.location.reload();
-        }, 2500);
+      } else {
+        throw new Error(response.data.message || "The server did not confirm the video upload.");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -281,6 +286,12 @@ const OrderContent = () => {
                 />
               </div>
 
+              {uploadSuccess && (
+                <p role="status" className="rounded-lg border border-emerald-300/20 bg-emerald-300/[0.08] px-4 py-3 text-sm font-medium text-emerald-200">
+                  Your film was uploaded successfully and added to your submissions.
+                </p>
+              )}
+
               <div className="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-3 text-sm text-gray-300">
                 <p>Accepted format: MP4</p>
                 <p className="mt-1">Maximum file size: {currentPackageType === "99" ? "500 MB" : "3 GB"}</p>
@@ -289,6 +300,7 @@ const OrderContent = () => {
 
               <Dropzone
                 multiple={false}
+                disabled={uploadLoading || uploadSuccess}
                 accept={{ 'video/mp4': ['.mp4'] }}
                 maxSize={currentPackageType === "99" ? 500 * 1024 * 1024 : 3 * 1024 * 1024 * 1024}
                 onDropAccepted={handleDrop}
@@ -346,15 +358,15 @@ const OrderContent = () => {
                   disabled={uploadLoading}
                   className="min-h-11 rounded-lg border border-white/15 px-5 py-2.5 text-sm font-medium text-gray-200 transition-colors hover:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-white/30 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Cancel
+                  {uploadSuccess ? "Done" : "Cancel"}
                 </button>
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={uploadLoading}
+                  disabled={uploadLoading || uploadSuccess}
                   className="min-h-11 rounded-lg bg-gradient-to-b from-sky-500 to-[#00D0B8] px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-[#0b1115] disabled:cursor-wait disabled:opacity-60"
                 >
-                  {uploadLoading ? "Uploading..." : "Upload film"}
+                  {uploadLoading ? "Uploading..." : uploadSuccess ? "Uploaded" : "Upload film"}
                 </button>
               </div>
             </div>

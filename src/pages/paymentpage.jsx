@@ -41,6 +41,9 @@ const initialCheckoutDetails = {
   note: "",
 };
 
+const checkoutInputClass =
+  "w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 disabled:cursor-not-allowed disabled:opacity-60";
+
 // Checkout Page Component
 const CheckoutPage = () => {
   const [clientSecret, setClientSecret] = useState(null);
@@ -151,7 +154,15 @@ const CheckoutPage = () => {
   }, [festivalPackageId]);
 
   const appearance = {
-    theme: "stripe",
+    theme: "night",
+    variables: {
+      colorPrimary: "#00D0B8",
+      colorBackground: "#151c20",
+      colorText: "#f8fafc",
+      colorDanger: "#fca5a5",
+      borderRadius: "8px",
+      fontFamily: "system-ui, sans-serif",
+    },
   };
 
   const options = {
@@ -273,29 +284,42 @@ const CheckoutPage = () => {
   console.log("WWWW", discount);
 
   return (
-    <div className="w-full flex flex-col md:flex-row min-h-screen bg-black px-10 md:px-16 lg:px-44 gap-10 pt-16 text-white">
-      <div className="w-full md:w-1/2">
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#05090c] px-4 py-10 text-white sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute -left-40 top-20 -z-0 h-96 w-96 rounded-full bg-cyan-500/10 blur-[120px]" />
+      <div className="pointer-events-none absolute -right-40 bottom-10 -z-0 h-96 w-96 rounded-full bg-teal-400/10 blur-[120px]" />
+      <div className="relative mx-auto max-w-7xl">
+        <header className="mb-8 border-b border-white/10 pb-6 sm:mb-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.26em] text-cyan-300">Place My Films</p>
+          <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Complete your film submission</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/60 sm:text-base">
+            Add your film and billing details, review your order, and securely complete your submission.
+          </p>
+        </header>
+
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] lg:gap-8">
+      <div className="min-w-0 space-y-5">
         {!userLoggedIn ? (
-          <section className="mb-6 rounded-lg border border-white/10 bg-[#171717] p-5">
+          <section className="rounded-xl border border-white/10 bg-[#0b1115] p-5 sm:p-6">
             <h2 className="text-xl font-semibold">Filmmaker account</h2>
+            <p className="mt-1 text-sm text-white/60">Log in or create an account to continue your submission.</p>
             <div className="mt-4 flex gap-2 border-b border-white/10">
               <button type="button" onClick={() => { setAccountMode("register"); setAuthError(""); }} className={`border-b-2 px-3 py-2 text-sm ${accountMode === "register" ? "border-cyan-300 text-cyan-200" : "border-transparent text-gray-400"}`}>New filmmaker</button>
               <button type="button" onClick={() => { setAccountMode("login"); setAuthError(""); }} className={`border-b-2 px-3 py-2 text-sm ${accountMode === "login" ? "border-cyan-300 text-cyan-200" : "border-transparent text-gray-400"}`}>Log in</button>
             </div>
             {accountMode === "login" ? (
               <form onSubmit={handleAccountLogin} className="mt-4 space-y-3">
-                <label className="block text-sm">Username or email
-                  <input className="mt-1 w-full rounded border border-white/15 bg-[#333] p-2" autoComplete="username" value={loginIdentifier} onChange={(event) => setLoginIdentifier(event.target.value)} required />
+                <label className="block text-sm text-white/80">Username or email
+                  <input className={`${checkoutInputClass} mt-1`} autoComplete="username" value={loginIdentifier} onChange={(event) => setLoginIdentifier(event.target.value)} required />
                 </label>
-                <label className="block text-sm">Password
-                  <input className="mt-1 w-full rounded border border-white/15 bg-[#333] p-2" type="password" autoComplete="current-password" value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} required />
+                <label className="block text-sm text-white/80">Password
+                  <input className={`${checkoutInputClass} mt-1`} type="password" autoComplete="current-password" value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} required />
                 </label>
                 <button className="rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300" type="submit">Log in and continue</button>
               </form>
             ) : (
               <div className="mt-4 space-y-3">
-                <label className="block text-sm">Choose a username
-                  <input className="mt-1 w-full rounded border border-white/15 bg-[#333] p-2" autoComplete="username" value={user_name} onChange={(event) => setUser_name(event.target.value)} required />
+                <label className="block text-sm text-white/80">Choose a username
+                  <input className={`${checkoutInputClass} mt-1`} autoComplete="username" value={user_name} onChange={(event) => setUser_name(event.target.value)} required />
                 </label>
                 <p className="text-xs leading-5 text-gray-400">After successful payment, we’ll create your filmmaker account and email your login password.</p>
               </div>
@@ -305,15 +329,19 @@ const CheckoutPage = () => {
             {usernameError === 200 && accountMode === "register" && <p role="alert" className="mt-3 text-sm text-amber-200">That username is already taken.</p>}
           </section>
         ) : (
-          <p className="mb-6 rounded-lg border border-emerald-300/20 bg-emerald-300/5 p-4 text-sm text-emerald-200">Logged in as {paymentDetails.email_add || email || "filmmaker"}</p>
+          <p className="rounded-xl border border-emerald-300/20 bg-emerald-300/5 p-4 text-sm text-emerald-200">Logged in as {paymentDetails.email_add || email || "filmmaker"}</p>
         )}
-        <form className="space-y-4">
-          <h3 className="text-3xl font-semibold">Film details</h3>
-          <label className="block">Film title
-            <input className="mt-1 w-full rounded border border-gray-900 bg-[#333] p-2" type="text" value={filmTitle} onChange={(event) => setFilmTitle(event.target.value)} required />
+        <form className="space-y-5 rounded-xl border border-white/10 bg-[#0b1115] p-5 sm:p-6">
+          <section className="space-y-4">
+          <div className="border-b border-white/10 pb-3">
+            <h2 className="text-xl font-semibold sm:text-2xl">Film details</h2>
+            <p className="mt-1 text-sm text-white/55">Tell us about the film you’re submitting.</p>
+          </div>
+          <label className="block text-sm font-medium text-white/80">Film title
+            <input className={`${checkoutInputClass} mt-1`} type="text" value={filmTitle} onChange={(event) => setFilmTitle(event.target.value)} required />
           </label>
-          <label className="block">Film file
-            <input className="mt-1 w-full rounded border border-gray-900 bg-[#333] p-2" type="file" accept="video/*,.mov" onChange={(event) => {
+          <label className="block text-sm font-medium text-white/80">Film file
+            <input className={`${checkoutInputClass} mt-1 cursor-pointer file:mr-4 file:rounded file:border-0 file:bg-cyan-400/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-cyan-200`} type="file" accept="video/*,.mov" onChange={(event) => {
               const file = event.target.files?.[0] || null;
               const maxSize = String(festivalPackageId) === "1" ? 500 * 1024 * 1024 : 3 * 1024 * 1024 * 1024;
               if (file && file.size > maxSize) {
@@ -328,12 +356,17 @@ const CheckoutPage = () => {
           </label>
           {filmFile && <p className="text-xs text-gray-400">Selected: {filmFile.name}</p>}
           {message && <p role="alert" className="text-sm text-red-300">{message}</p>}
-          <h3 className="pt-4 text-3xl font-semibold">Billing details</h3>
-          <div className="flex w-full gap-2">
-            <div className="flex flex-col gap-2 w-full">
-              <label className="block">First name</label>
+          </section>
+          <section className="space-y-4 border-t border-white/10 pt-5">
+          <div className="border-b border-white/10 pb-3">
+            <h2 className="text-xl font-semibold sm:text-2xl">Billing details</h2>
+            <p className="mt-1 text-sm text-white/55">Enter the billing information for your payment.</p>
+          </div>
+          <div className="flex w-full flex-col gap-4 sm:flex-row">
+            <div className="flex w-full flex-col gap-2">
+              <label className="block text-sm font-medium text-white/80">First name</label>
               <input
-                className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+                className={checkoutInputClass}
                 type="text"
                 name="first_name"
                 value={paymentDetails.first_name}
@@ -341,10 +374,10 @@ const CheckoutPage = () => {
                 onChange={handleInputChange}
               />
             </div>
-            <div className="flex flex-col gap-2 w-full">
-              <label className="block">Last name</label>
+            <div className="flex w-full flex-col gap-2">
+              <label className="block text-sm font-medium text-white/80">Last name</label>
               <input
-                className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+                className={checkoutInputClass}
                 type="text"
                 name="last_name"
                 value={paymentDetails.last_name}
@@ -354,18 +387,18 @@ const CheckoutPage = () => {
             </div>
           </div>
 
-          <label className="block">Company name (optional)</label>
+          <label className="block text-sm font-medium text-white/80">Company name (optional)</label>
           <input
-            className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+            className={checkoutInputClass}
             type="text"
             name="company_name"
             value={paymentDetails.company_name}
             onChange={handleInputChange}
           />
 
-          <label className="block">Country / Region</label>
+          <label className="block text-sm font-medium text-white/80">Country / Region</label>
           <select
-            className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+            className={checkoutInputClass}
             name="country"
             value={paymentDetails.country}
             required
@@ -378,9 +411,9 @@ const CheckoutPage = () => {
             ))}
           </select>
 
-          <label className="block">Street address line 1</label>
+          <label className="block text-sm font-medium text-white/80">Street address line 1</label>
           <input
-            className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+            className={checkoutInputClass}
             type="text"
             name="address1"
             value={paymentDetails.address1}
@@ -388,20 +421,20 @@ const CheckoutPage = () => {
             onChange={handleInputChange}
           />
 
-          <label className="block">
+          <label className="block text-sm font-medium text-white/80">
           Street address line 2
           </label>
           <input
-            className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+            className={checkoutInputClass}
             type="text"
             name="address2"
             value={paymentDetails.address2}
             onChange={handleInputChange}
           />
 
-          <label className="block">Town / City</label>
+          <label className="block text-sm font-medium text-white/80">Town / City</label>
           <input
-            className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+            className={checkoutInputClass}
             type="text"
             name="city"
             value={paymentDetails.city}
@@ -409,9 +442,9 @@ const CheckoutPage = () => {
             onChange={handleInputChange}
           />
 
-          <label className="block">State</label>
+          <label className="block text-sm font-medium text-white/80">State</label>
           <select
-            className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+            className={checkoutInputClass}
             name="state"
             value={paymentDetails.state}
             required
@@ -424,9 +457,9 @@ const CheckoutPage = () => {
             ))}
           </select>
 
-          <label className="block">ZIP Code</label>
+          <label className="block text-sm font-medium text-white/80">ZIP Code</label>
           <input
-            className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+            className={checkoutInputClass}
             type="text"
             name="zip_code"
             value={paymentDetails.zip_code}
@@ -434,9 +467,9 @@ const CheckoutPage = () => {
             onChange={handleInputChange}
           />
 
-          <label className="block">Phone</label>
+          <label className="block text-sm font-medium text-white/80">Phone</label>
           <input
-            className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+            className={checkoutInputClass}
             type="tel"
             name="phone"
             value={paymentDetails.phone}
@@ -444,9 +477,9 @@ const CheckoutPage = () => {
             onChange={handleInputChange}
           />
 
-          <label className="block">Email address </label>
+          <label className="block text-sm font-medium text-white/80">Email address</label>
           <input
-            className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+            className={checkoutInputClass}
             type="email"
             name={userLoggedIn ? "email_add" : "email"}
               value={userLoggedIn ? (paymentDetails.email_add || email) : email}
@@ -460,7 +493,7 @@ const CheckoutPage = () => {
 
           {/* <label className="block">Account username *</label>
           <input
-            className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+            className={checkoutInputClass}
             type="text"
             name={userLoggedIn ? "username" : "user_name"}
             value={userLoggedIn ? paymentDetails.username : user_name}
@@ -481,19 +514,23 @@ const CheckoutPage = () => {
             onChange={handleInputChange}
           />
 
-          <h1 className="text-3xl font-semibold">Additional information</h1>
-          <label className="block">Order notes (optional)</label>
+          <div className="border-t border-white/10 pt-5">
+            <h2 className="text-xl font-semibold sm:text-2xl">Additional information</h2>
+            <p className="mt-1 text-sm text-white/55">Add any optional notes for your submission.</p>
+          </div>
+          <label className="block text-sm font-medium text-white/80">Order notes (optional)</label>
           <textarea
             rows={6}
-            className="w-full p-2 border bg-[#333] border-gray-900 rounded"
+            className={`${checkoutInputClass} resize-y`}
             name="note"
             value={paymentDetails.note}
             placeholder="Notes about your order, e.g. special notes for delivery."
             onChange={handleInputChange}
           ></textarea>
+          </section>
         </form>
       </div>
-      <div className="w-full md:w-1/2">
+      <div className="min-w-0">
         {clientSecret ? (
           <Elements stripe={stripePromise} options={options}>
             <CheckoutForm
@@ -514,13 +551,15 @@ const CheckoutPage = () => {
             />
           </Elements>
         ) : (
-          <div className="flex flex-col gap-2 justify-center items-center h-1/2">
-            <FaSpinner className="animate-spin text-4xl" />
-            <p>Loading stripe form . . .</p>
+          <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-xl border border-white/10 bg-[#0b1115] text-white/70">
+            <FaSpinner className="animate-spin text-3xl text-cyan-300" />
+            <p>Loading secure payment form...</p>
           </div>
         )}
       </div>
     </div>
+      </div>
+    </main>
   );
 };
 
@@ -652,24 +691,27 @@ const CheckoutForm = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 p-6 from-[#00B7D3] to-[#00BDCD] rounded-lg bg-gradient-to-b text-white"
+      className="space-y-5 rounded-xl border border-white/10 bg-[#0b1115] p-5 text-white shadow-[0_20px_70px_rgba(0,0,0,0.3)] sm:p-6 lg:sticky lg:top-24"
     >
-      <h3 className="text-2xl text-center">Your Order</h3>
+      <div className="border-b border-white/10 pb-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300">Secure checkout</p>
+        <h2 className="mt-2 text-2xl font-semibold">Your order</h2>
+      </div>
 
-      <div className="pt-4 rounded flex justify-between w-full">
+      <div className="rounded-lg border border-white/10 bg-[#10171b] px-4">
         <div className="flex flex-col gap-8 w-full">
           <table className="w-full border-collapse text-left  ">
             <thead>
-              <tr className="border-b border-gray-500">
-                <th className="py-4 text-xl">Product</th>
-                <th className="py-4 text-right text-xl">Price</th>
+              <tr className="border-b border-white/10">
+                <th className="py-4 text-sm font-semibold uppercase tracking-wider text-white/55">Product</th>
+                <th className="py-4 text-right text-sm font-semibold uppercase tracking-wider text-white/55">Price</th>
               </tr>
             </thead>
             <tbody>
               {cart.map((item) => (
                 <tr key={item.id}>
-                  <td className="py-4">{item.title}</td>
-                  <td className="py-4 text-right">{`${Number(
+                  <td className="py-4 font-medium">{item.title}</td>
+                  <td className="py-4 text-right font-medium">{`$${Number(
                     item.amount
                   ).toFixed(2)}`}</td>
                 </tr>
@@ -678,55 +720,58 @@ const CheckoutForm = ({
           </table>
         </div>
       </div>
-      <div className="flex justify-between py-4">
+      <div className="flex justify-between text-sm text-white/65">
         <span>Subtotal</span>
         <span>{`$${subtotal.toFixed(2)}`}</span>
       </div>
-      <div className="flex justify-between py-4">
+      <div className="flex justify-between text-sm text-white/65">
         <span>Discount</span>
         <span>{`$${discount}`}</span>
       </div>
-      <div className="flex justify-between py-4">
+      <div className="flex justify-between border-t border-white/10 pt-4">
         <p className="text-lg font-semibold">Total</p>
-        <p className="text-lg font-semibold">${totalAmount.toFixed(2)}</p>
+        <p className="text-xl font-bold text-cyan-200">${totalAmount.toFixed(2)}</p>
       </div>
       {/* <LinkAuthenticationElement /> */}
 
       {/* <h3 className="text-lg font-semibold">Shipping</h3> */}
       {/* <AddressElement options={{ mode: "shipping", allowedCountries: ["US"] }} /> */}
 
-      <h3 className="text-lg font-semibold">Payment</h3>
-      <PaymentElement />
-
-      <div className="flex items-center gap-2">
-        <input type="checkbox" id="exclusiveEmails" name="exclusiveEmails" />
-        <label htmlFor="exclusiveEmails">
-          I would like to receive exclusive emails with discounts and product
-          information
-        </label>
+      <div>
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-white/80">Payment method</h3>
+        <PaymentElement />
       </div>
 
-      <div className="flex items-center gap-2">
+      <label htmlFor="exclusiveEmails" className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-white/65">
+        <input className="mt-1 accent-cyan-400" type="checkbox" id="exclusiveEmails" name="exclusiveEmails" />
+        <span>
+          I would like to receive exclusive emails with discounts and product
+          information
+        </span>
+      </label>
+
+      <label htmlFor="termsConditions" className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-white/75">
         <input
+          className="mt-1 accent-cyan-400"
           type="checkbox"
           id="termsConditions"
           name="termsConditions"
           required
         />
-        <label htmlFor="termsConditions">
+        <span>
           I have read and agree to Place My Films, LLC. terms and conditions *
-        </label>
-      </div>
+        </span>
+      </label>
 
       <button
-        className="mt-5 w-max rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-5 py-3 text-sm font-semibold uppercase text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:cursor-wait disabled:opacity-60"
+        className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-5 py-3 text-sm font-semibold uppercase tracking-wide text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:cursor-wait disabled:opacity-60"
         type="submit"
         disabled={isSubmitting}
       >
         {isSubmitting ? "Processing..." : "Submit"}
       </button>
 
-      {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
+      {errorMessage && <div role="alert" className="rounded-md border border-red-400/20 bg-red-400/10 p-3 text-sm text-red-200">{errorMessage}</div>}
     </form>
   );
 };
