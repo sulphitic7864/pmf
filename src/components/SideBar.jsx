@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { CircleHelp, CreditCard, FileText, House, LogOut, Mail, MapPin, PanelLeftClose, PanelLeftOpen, Settings, UploadCloud } from 'lucide-react'
+import { CreditCard, FileText, House, LogOut, Mail, MapPin, PanelLeftClose, PanelLeftOpen, Settings, UploadCloud } from 'lucide-react'
 import dashboardBanner from '../assets/images/dashbaord_side_banner.png'
 
 const navigationContent = [
@@ -47,7 +47,8 @@ const SideBar = ({ collapsed = false, hidePromo = false, hideLogout = false, hid
     })
 
     return (
-        <div className={`scrollbar-hidden flex h-full flex-col overflow-y-auto ${collapsed ? 'px-2' : 'px-3'} py-5 ${hideLogout ? 'pb-24' : ''}`}>
+        <div className={`flex h-full min-h-0 flex-col overflow-hidden ${collapsed ? 'px-2' : 'px-3'} py-5 md:pb-1`}>
+            <div className={`scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto ${hideLogout ? 'pb-24' : ''}`}>
             {!hideToggle && <div className={`mb-5 flex ${collapsed ? 'justify-center' : 'justify-end px-2'}`}>
                 <button
                     type='button'
@@ -68,20 +69,17 @@ const SideBar = ({ collapsed = false, hidePromo = false, hideLogout = false, hid
             <nav aria-label='Account settings' className='flex flex-col gap-1'>
                 {renderNavigation(accountContent)}
             </nav>
-            <Link to='/contact' title={collapsed ? 'Help & Support' : undefined} aria-label={collapsed ? 'Help & Support' : undefined} className={`mt-1 flex min-h-11 items-center rounded-r-lg border-l-[3px] border-transparent text-sm text-gray-300 transition-colors hover:bg-white/[0.04] hover:text-white ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'}`}>
-                <CircleHelp size={18} className='text-gray-400' />
-                <span className={collapsed ? 'sr-only' : ''}>Help & Support</span>
-            </Link>
             {!hidePromo && !collapsed && (
                 <div className='mt-auto hidden pt-6 md:block'>
                     <img src={dashboardBanner} alt='Your story belongs here' className='mx-auto aspect-[0.58] max-h-64 w-full rounded-sm object-cover object-center' />
                     <p className='mt-3 text-center text-[10px] uppercase text-gray-500'>Film · TV · Streaming · Global</p>
                 </div>
             )}
-            {!hideLogout && <div className='sticky bottom-0 z-10 mt-auto border-t border-white/10 bg-[#080d10] pb-4 pt-3 md:border-0 md:bg-transparent md:pb-0'>
-                <button type='button' title={collapsed ? 'Log out' : undefined} aria-label={collapsed ? 'Log out' : undefined} onClick={handleLogout} className={`flex min-h-11 w-full items-center rounded-md text-sm font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 md:justify-start md:rounded-r-lg md:rounded-l-none md:border-l-[3px] md:border-transparent md:bg-none md:text-gray-300 md:hover:bg-white/[0.04] md:hover:text-rose-300 ${collapsed ? 'justify-center px-0' : 'justify-center gap-2 px-4 md:gap-3 md:px-3'}`}>
+            </div>
+            {!hideLogout && <div className='z-10 shrink-0 border-t border-white/10 bg-[#080d10] pt-3 md:border-0 md:bg-transparent md:pb-0 md:pt-0'>
+                <button type='button' title={collapsed ? 'Logout' : undefined} aria-label={collapsed ? 'Logout' : undefined} onClick={handleLogout} className={`flex min-h-11 w-full items-center rounded-md text-sm font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 md:justify-start md:rounded-r-lg md:rounded-l-none md:border-l-[3px] md:border-transparent md:bg-none md:text-gray-300 md:hover:bg-white/[0.04] md:hover:text-rose-300 ${collapsed ? 'justify-center px-0' : 'justify-center gap-2 px-4 md:gap-3 md:px-3 '}`}>
                     <LogOut size={18} className='md:text-gray-400' />
-                    <span className={collapsed ? 'sr-only' : ''}>Log out</span>
+                    <span className={collapsed ? 'sr-only' : ''}>Logout</span>
                 </button>
             </div>}
         </div>

@@ -15,6 +15,8 @@ const DashboardComponents = () => {
       return <OrderContent />;
     case '/my-account/submissions':
       return <DashboardOverview />;
+    case '/my-account/specification':
+      return <DashboardOverview />;
     case '/my-account/messages':
       return <MessagesScreen />;
     case '/my-account/edit-address':

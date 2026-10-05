@@ -6,16 +6,18 @@ import {
   ArrowRight,
   CheckCircle2,
   CircleHelp,
-  Clock3,
   CloudUpload,
   FileVideo2,
   FolderOpen,
+  Eye,
   Mail,
   MonitorPlay,
-  ShieldCheck,
+  Trophy,
 } from 'lucide-react'
 import { API_ENDPOINTS } from '../server/api_endpoints'
 import cameraman from '../assets/images/cameraman.png'
+import DashboardSpecifications from './DashboardSpecifications'
+import TrackedVideoPlayer from './TrackedVideoPlayer'
 
 const getFileName = (url, fallback) => {
   if (!url) return fallback
@@ -26,11 +28,18 @@ const getFileName = (url, fallback) => {
   }
 }
 
+const formatSubmissionDate = (date) => {
+  if (!date) return 'Date unavailable'
+  const parsedDate = new Date(date)
+  return Number.isNaN(parsedDate.getTime())
+    ? 'Date unavailable'
+    : parsedDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
 const DashboardOverview = () => {
   const { pathname } = useLocation()
   const [accountName, setAccountName] = useState('Filmmaker')
   const [videos, setVideos] = useState([])
-  const [quota, setQuota] = useState({ shortUsed: 0, shortTotal: 0, featureUsed: 0, featureTotal: 0 })
   const [loading, setLoading] = useState(true)
   const token = localStorage.getItem('token')
 
@@ -55,23 +64,14 @@ const DashboardOverview = () => {
       const results = await Promise.allSettled([
         axios.get(API_ENDPOINTS.GET_USER_DETAILS(userId), { headers }),
         axios.post(API_ENDPOINTS.GET_USER_VIDEOS, { user_id: userId }, { headers }),
-        axios.post(API_ENDPOINTS.GET_USED_VIDEO_COUNTS, { user_id: userId }, { headers }),
       ])
 
       if (!isActive) return
 
       const accountData = results[0].status === 'fulfilled' ? results[0].value.data?.result?.[0] : null
       const videosData = results[1].status === 'fulfilled' ? results[1].value.data?.result : null
-      const countData = results[2].status === 'fulfilled' ? results[2].value.data?.result : null
-
       if (accountData) setAccountName(accountData.displayName || accountData.username || accountData.firstName || 'Filmmaker')
       if (Array.isArray(videosData)) setVideos(videosData)
-      setQuota({
-        shortUsed: Number(countData?.package_99_count || 0),
-        shortTotal: Number(countData?.count_99 || 0),
-        featureUsed: Number(countData?.package_299_count || 0),
-        featureTotal: Number(countData?.count_299 || 0),
-      })
       setLoading(false)
     }
 
@@ -79,8 +79,12 @@ const DashboardOverview = () => {
     return () => { isActive = false }
   }, [token])
 
-  const remainingCredits = Math.max(0, quota.shortTotal - quota.shortUsed) + Math.max(0, quota.featureTotal - quota.featureUsed)
   const recentVideos = [...videos].slice(-3).reverse()
+  const updateViewCount = (videoId, viewCount) => {
+    setVideos((currentVideos) => currentVideos.map((video) => (
+      video.id === videoId ? { ...video, viewCount } : video
+    )))
+  }
 
   if (pathname === '/my-account/submissions') {
     return (
@@ -104,13 +108,26 @@ const DashboardOverview = () => {
                   <div className='flex min-w-0 items-center gap-3'>
                     <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-400/10 text-cyan-300'><FileVideo2 size={20} /></span>
                     <div className='min-w-0'>
-                      <p className='truncate text-sm font-medium'>{getFileName(video.url, `Film submission ${index + 1}`)}</p>
-                      <p className='mt-1 text-xs text-gray-500'>{video.festivalTitle || `Package ${video.packageType || 'submission'}`}</p>
+                      <p className='truncate text-sm font-medium'>{video.title || getFileName(video.url, `Film submission ${index + 1}`)}</p>
+                      <p className='mt-1 text-xs text-gray-500'>
+                        {video.festivalTitle || `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`}
+                      </p>
                     </div>
                   </div>
+                  {video.url && (
+                    <TrackedVideoPlayer
+                      video={video}
+                      className='w-full rounded-md sm:w-44'
+                      onViewCountChange={updateViewCount}
+                    />
+                  )}
                   <div className='flex items-center justify-between gap-4 sm:justify-end'>
-                    <span className='inline-flex items-center gap-1.5 text-xs text-emerald-300'><CheckCircle2 size={14} /> {video.submissionStatus || 'Submitted'}</span>
-                    {video.url && <a href={video.url} target='_blank' rel='noreferrer' className='text-xs font-medium text-cyan-300 hover:text-cyan-100'>Open file</a>}
+                    <span className='inline-flex items-center gap-1.5 text-xs text-cyan-200'><Eye size={14} /> {Number(video.viewCount || 0)} views</span>
+                    <span className='inline-flex items-center gap-1.5 text-xs text-emerald-300'><CheckCircle2 size={14} /> {(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}</span>
+                  </div>
+                  <div className='text-xs text-gray-400 sm:w-36 sm:text-right'>
+                    <p>Submitted</p>
+                    <time dateTime={video.createdAt}>{formatSubmissionDate(video.createdAt)}</time>
                   </div>
                 </div>
               ))}
@@ -130,14 +147,14 @@ const DashboardOverview = () => {
 
   const stats = [
     { label: 'Files submitted', value: loading ? '—' : videos.length, icon: FileVideo2, tint: 'text-sky-300 bg-sky-400/10' },
-    { label: 'Short-film uploads', value: loading ? '—' : `${quota.shortUsed} / ${quota.shortTotal}`, icon: Clock3, tint: 'text-emerald-300 bg-emerald-400/10' },
-    { label: 'Feature-film uploads', value: loading ? '—' : `${quota.featureUsed} / ${quota.featureTotal}`, icon: CheckCircle2, tint: 'text-cyan-300 bg-cyan-400/10' },
-    { label: 'Credits remaining', value: loading ? '—' : remainingCredits, icon: ShieldCheck, tint: 'text-amber-300 bg-amber-400/10' },
+    { label: 'Festival entries', value: loading ? '—' : videos.filter((video) => video.festivalId).length, icon: Trophy, tint: 'text-emerald-300 bg-emerald-400/10' },
+    { label: 'Film views', value: loading ? '—' : videos.reduce((total, video) => total + Number(video.viewCount || 0), 0), icon: Eye, tint: 'text-cyan-300 bg-cyan-400/10' },
   ]
 
   return (
     <div className='grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_270px] xl:grid-cols-[minmax(0,1fr)_290px]'>
       <div className='min-w-0 space-y-5'>
+        {pathname === '/my-account/specification' ? <DashboardSpecifications /> : <>
         <section className='relative isolate flex min-h-36 items-center overflow-hidden rounded-xl border border-white/10 bg-[#0b1217] px-5 py-6 sm:px-8'>
           <img src={cameraman} alt='' aria-hidden='true' className='absolute inset-0 -z-20 h-full w-full object-cover object-[center_42%] opacity-40' />
           <div className='absolute inset-0 -z-10 bg-gradient-to-r from-[#071015] via-[#071015]/90 to-[#071015]/20' />
@@ -151,7 +168,7 @@ const DashboardOverview = () => {
           </div>
         </section>
 
-        <section aria-label='Account overview' className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
+        <section aria-label='Account overview' className='grid grid-cols-2 gap-3 lg:grid-cols-3'>
           {stats.map(({ label, value, icon: Icon, tint }) => (
             <div key={label} className='min-w-0 rounded-xl border border-white/10 bg-[#0b1115] p-4'>
               <div className={`flex h-9 w-9 items-center justify-center rounded-full ${tint}`}><Icon size={18} /></div>
@@ -183,6 +200,7 @@ const DashboardOverview = () => {
             </div>
           </div>
         </section>
+        </>}
       </div>
 
       <aside className='min-w-0 space-y-5'>
@@ -200,7 +218,10 @@ const DashboardOverview = () => {
                   <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-cyan-400/10 text-cyan-300'><MonitorPlay size={19} /></span>
                   <div className='min-w-0 flex-1'>
                     <p className='truncate text-xs font-medium'>{video.title || getFileName(video.url, `Film ${videos.length - index}`)}</p>
-                    <p className='mt-1 truncate text-[11px] text-emerald-300'>{video.festivalTitle || video.submissionStatus || 'Submitted'}</p>
+                    <p className='mt-1 truncate text-[11px] text-gray-400'>{video.festivalTitle || 'Free film submission'}</p>
+                    <p className='mt-1 truncate text-[11px] text-emerald-300'>{(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}</p>
+                    <p className='mt-1 inline-flex items-center gap-1 text-[11px] text-cyan-200'><Eye size={12} /> {Number(video.viewCount || 0)} views</p>
+                    <p className='mt-1 truncate text-[11px] text-gray-500'>{formatSubmissionDate(video.createdAt)}</p>
                   </div>
                 </div>
               ))}
@@ -218,9 +239,8 @@ const DashboardOverview = () => {
           <h2 className='border-b border-white/10 pb-3 text-sm font-semibold'>Quick links</h2>
           <div className='mt-1 divide-y divide-white/10'>
             {[
-              { label: 'Submission guidelines', to: '/specification', icon: FileVideo2 },
-              { label: 'Browse film packages', to: '/contest', icon: FolderOpen },
-              { label: 'Contact support', to: '/contact', icon: CircleHelp },
+              { label: 'Submission guidelines', to: '/my-account/specification', icon: FileVideo2 },
+              { label: 'Enter Film Festival', to: '/contest', icon: FolderOpen },
             ].map(({ label, to, icon: Icon }) => (
               <Link key={to} to={to} className='flex min-h-12 items-center gap-3 text-xs text-gray-300 transition-colors hover:text-cyan-200'>
                 <Icon size={18} className='text-cyan-300' />

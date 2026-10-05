@@ -27,3 +27,23 @@ h1::selection{
 .scrollbar-hidden::-webkit-scrollbar {
   display: none;
 }
+
+.modal-scrollbar {
+  scrollbar-color: rgb(34 211 238 / 0.35) transparent;
+  scrollbar-width: thin;
+}
+
+.modal-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-scrollbar::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background: rgb(34 211 238 / 0.35);
+  background-clip: content-box;
+}
