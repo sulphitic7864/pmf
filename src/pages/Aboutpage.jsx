@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import React from 'react'
 import { images } from '../constants/constants'
 import { Link } from 'react-router-dom'
 
@@ -79,10 +78,10 @@ const Aboutpage = () => {
             </div>
 
             <Link
-              to='/contest'
+              to='/onboarding'
               className='mt-8 inline-flex min-h-12 items-center justify-center rounded-full bg-gradient-to-b from-sky-500 to-[#00D0B8] px-7 py-3 text-sm font-semibold uppercase text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-4 focus:ring-offset-[#05090c]'
             >
-              Explore film submissions
+              Create an account
             </Link>
           </motion.div>
         </div>

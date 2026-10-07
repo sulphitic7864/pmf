@@ -16,7 +16,7 @@ const routes = [
         path: '/about'
     },
     {
-        name: 'Contest',
+        name: 'Film Festivals',
         path: '/contest'
     },
     {

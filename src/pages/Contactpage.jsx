@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import { getCountries, getCountryCallingCode } from 'libphonenumber-js';
@@ -29,6 +29,7 @@ const Contactpage = () => {
     const [error, setError] = useState(initialContactData);
     const [userID, setUserID] = useState(null);
     const [recaptchaValue, setRecaptchaValue] = useState(null);
+    const recaptchaRef = useRef(null);
     const countries = getFormattedCountries();
     const token = localStorage.getItem("token");
 
@@ -82,6 +83,7 @@ const Contactpage = () => {
 
     const handleRecaptchaChange = (value) => {
         setRecaptchaValue(value);
+        setError(current => ({ ...current, recaptcha: '' }));
     };
 
     const validateField = () => {
@@ -156,10 +158,10 @@ const Contactpage = () => {
                         email: prevData.email
                     }));
                     // Reset reCAPTCHA
+                    recaptchaRef.current?.reset();
                     setRecaptchaValue(null);
-                    window.grecaptcha?.reset();
                 }
-            } catch (error) {
+            } catch {
                 toast.error('Something went wrong');
             }
         }
@@ -176,7 +178,7 @@ const Contactpage = () => {
                 <div className='w-full min-h-screen bg-black px-5 sm:px-10 md:px-28 lg:px-48 pt-8 pb-12'>
                     <h1 className='text-3xl gradient-text font-semibold'>For a zoom meeting contact us here...!</h1>
                     <p className='mt-5 mb-6 gradient-text'>Send us a message using our form below. We will get back to you within 24 hours. Thanks for visiting Place My Films!</p>
-                    <form>
+                    <form onSubmit={handleSubmit}>
                         <div className='w-full max-w-5xl flex flex-col gap-4 text-white'>
                             <div className='flex flex-col sm:flex-row gap-4 sm:gap-5'>
                                 <div className='w-full sm:w-1/2'>
@@ -254,14 +256,17 @@ const Contactpage = () => {
                             </div>
                             <div className='w-full'>
                                 <ReCAPTCHA
+                                    ref={recaptchaRef}
                                     sitekey="6Lc2BtYqAAAAAOkDyJBuHrakKg2jdkgCW3nMg_Je"
                                     onChange={handleRecaptchaChange}
+                                    onExpired={() => setRecaptchaValue(null)}
                                     theme="dark"
+                                    useRecaptchaNet
                                 />
                                 {error.recaptcha && <p className='text-red-500'>{error.recaptcha}</p>}
                             </div>
                             <div className='w-full'>
-                                <button className='w-full sm:w-auto min-w-40 rounded-sm bg-gradient-to-b from-sky-500 to-[#00D0B8] px-6 py-3 text-sm uppercase text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-black' onClick={handleSubmit}>Submit</button>
+                                <button type="submit" className='w-full sm:w-auto min-w-40 rounded-sm bg-gradient-to-b from-sky-500 to-[#00D0B8] px-6 py-3 text-sm uppercase text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-black'>Submit</button>
                             </div>
                         </div>
                     </form>

@@ -115,7 +115,7 @@ const ContestPage = () => {
 
           <div className='flex min-h-[166px] flex-col items-center justify-center px-5 py-6 text-center'>
             <FaFileAlt className='mb-4 text-[2.3rem] text-[#14c6f4]' aria-hidden='true' />
-            <h2 className='text-sm font-bold uppercase text-white'>Eligible Formats</h2>
+            <h2 className='text-sm font-bold uppercase text-white'>Eligible Genres</h2>
             <p className='mt-3 max-w-[260px] text-sm leading-relaxed text-white/80'>
               Feature, Short, Documentary, Animation and More
             </p>

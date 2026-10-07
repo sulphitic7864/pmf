@@ -47,3 +47,17 @@ h1::selection{
   background: rgb(34 211 238 / 0.35);
   background-clip: content-box;
 }
+
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"] {
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+a[href],
+[role="link"] {
+  cursor: pointer;
+}

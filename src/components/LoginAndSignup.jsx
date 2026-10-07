@@ -1,10 +1,9 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { API_ENDPOINTS } from '../server/api_endpoints';
 import { Link, useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
 
 const initialLoginData = {loginemail: '', loginpassword: ''}
 const initialSignupData = {signupemail: '', username: '', firstName: '', lastName: ''}
@@ -72,7 +71,7 @@ const LoginAndSignUp = () => {
                     navigate('/my-account/');
                 }, 3000);
             }
-        } catch(error) {
+        } catch {
             toast.error('Invalid login credentials');
         } finally {
             setLoading(false);
@@ -117,38 +116,14 @@ const LoginAndSignUp = () => {
             return;
         }
 
-        setLoading(true);
-        try {
-            // Register the user first (email and username only)
-            const registerRequestBody = {
-                email: signupData.signupemail,
-                username: signupData.username
-            }
-            
-            const registerResponse = await axios.post(
-                API_ENDPOINTS.REGISTER, 
-                registerRequestBody,
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                }
-            );
-
-            if (registerResponse.data.response_code === 201) {
-                // Store firstName and lastName in localStorage for later update
-                localStorage.setItem('tempFirstName', signupData.firstName);
-                localStorage.setItem('tempLastName', signupData.lastName);
-                
-                toast.success('Registration successful! Login details sent to your email.');
-                setSignupData(initialSignupData);
-                setAuthMode('login');
-            }
-        } catch(error) {
-            toast.error(error.response?.data?.error || 'Registration failed');
-        } finally {
-            setLoading(false);
-        }
+        navigate('/onboarding', {
+            state: {
+                email: signupData.signupemail.trim(),
+                username: signupData.username.trim(),
+                firstName: signupData.firstName.trim(),
+                lastName: signupData.lastName.trim(),
+            },
+        });
     }
 
     return (
@@ -245,13 +220,13 @@ const LoginAndSignUp = () => {
                                     <label className='mb-2 block text-sm font-medium text-gray-200' htmlFor='signupemail'>Email Address *</label>
                                     <input className={inputClassName} id='signupemail' type='email' autoComplete='email' value={signupData.signupemail} onChange={handleSignupChange} />
                                 </div>
-                                <p className='mb-5 text-sm leading-6 text-gray-400'>A link to set a new password will be sent to your email address.</p>
+                                <p className='mb-5 text-sm leading-6 text-gray-400'>Complete a one-time $25 filmmaker onboarding payment. Film submissions are free after onboarding; festival entry fees are charged separately.</p>
                                 <label className='mb-6 flex items-start text-sm text-gray-300'>
                                     <input type='checkbox' className='form-checkbox mt-1 text-sky-500' />
                                     <span className='ml-2'>Yes, add me to your mailing list</span>
                                 </label>
                                 <button className={submitButtonClassName} type='submit' disabled={loading}>
-                                    {loading ? 'Processing...' : 'Register'}
+                                    Continue to $25 checkout
                                 </button>
                             </form>
                             <p className='mt-6 text-center text-sm text-gray-400'>

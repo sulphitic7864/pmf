@@ -257,8 +257,8 @@ const OrderContent = () => {
           >
             <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#0b1115]/95 px-5 py-4 backdrop-blur sm:px-7">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-cyan-300">Free film submission</p>
-                <h2 id="upload-modal-title" className="mt-1 text-xl font-semibold">Upload a film</h2>
+                <p className="text-xs font-semibold uppercase tracking-wide text-cyan-300">Short film submission</p>
+                <h2 id="upload-modal-title" className="mt-1 text-xl font-semibold capitalize">Upload a film</h2>
               </div>
               <button
                 type="button"
@@ -273,7 +273,7 @@ const OrderContent = () => {
 
             <div className="space-y-5 px-5 py-5 sm:px-7 sm:py-6">
               <div>
-                <label htmlFor="film-title" className="mb-2 block text-sm font-medium text-gray-200">Film title</label>
+                <label htmlFor="film-title" className="mb-2 block text-sm font-medium text-gray-200 capitalize">Film title</label>
                 <input
                   id="film-title"
                   type="text"
@@ -281,7 +281,7 @@ const OrderContent = () => {
                   onChange={(event) => setFilmTitle(event.target.value)}
                   maxLength={255}
                   required
-                  className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2.5 text-white placeholder:text-gray-500 focus:border-cyan-300 focus:outline-none focus:ring-1 focus:ring-cyan-300"
+                  className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2.5 text-white placeholder:text-gray-500 focus:border-cyan-300 focus:outline-none focus:ring-1 focus:ring-cyan-300 capitalize"
                   placeholder="Enter your film title"
                 />
               </div>
@@ -293,9 +293,9 @@ const OrderContent = () => {
               )}
 
               <div className="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-3 text-sm text-gray-300">
-                <p>Accepted format: MP4</p>
-                <p className="mt-1">Maximum file size: {currentPackageType === "99" ? "500 MB" : "3 GB"}</p>
-                <p className="mt-1 text-gray-400">No duration requirement for free submissions.</p>
+                <p className="capitalize"   >Accepted format: MP4</p>
+                <p className="mt-1 capitalize">Maximum file size: {currentPackageType === "99" ? "500 MB" : "3 GB"}</p>
+                <p className="mt-1 text-gray-400">Duration must be 15min minimum, 30min maximum.</p>
               </div>
 
               <Dropzone
