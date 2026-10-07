@@ -76,11 +76,48 @@ const OnboardingCheckoutPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isStartingCheckout, setIsStartingCheckout] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [checkingAccount, setCheckingAccount] = useState(
+    Boolean(localStorage.getItem("token"))
+  );
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      navigate("/my-account/orders", { replace: true });
-    }
+    const token = localStorage.getItem("token");
+    if (!token) return undefined;
+
+    let isActive = true;
+    const checkOnboardingStatus = async () => {
+      try {
+        const response = await axios.get(API_ENDPOINTS.ONBOARDING_STATUS, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.data?.status) {
+          throw new Error(response.data?.message || "Unable to check onboarding status.");
+        }
+        if (!isActive) return;
+        if (response.data.onboardingPaid) {
+          navigate("/my-account/orders", { replace: true });
+          return;
+        }
+        setEmail(response.data.user.email || "");
+        setUsername(response.data.user.username || "");
+        setFirstName(response.data.user.firstName || "");
+        setLastName(response.data.user.lastName || "");
+        setCheckingAccount(false);
+      } catch (error) {
+        if (isActive) {
+          setErrorMessage(
+            error.response?.data?.message ||
+              "We couldn't verify your account. Please log in again."
+          );
+          setCheckingAccount(false);
+        }
+      }
+    };
+
+    checkOnboardingStatus();
+    return () => {
+      isActive = false;
+    };
   }, [navigate]);
 
   const finishOnboarding = async (intentId) => {
@@ -95,10 +132,11 @@ const OnboardingCheckoutPage = () => {
         throw new Error(response.data?.message || "Account setup could not be completed.");
       }
       toast.success(response.data.message || "Onboarding is complete. Please log in.");
-      navigate("/my-account/", {
-        replace: true,
-        state: { onboardingComplete: true },
-      });
+      if (localStorage.getItem("token")) {
+        navigate("/my-account/orders", { replace: true });
+      } else {
+        navigate("/my-account/", { replace: true });
+      }
     } catch (error) {
       setErrorMessage(
         error.response?.data?.message ||
@@ -122,16 +160,17 @@ const OnboardingCheckoutPage = () => {
         username: username.trim(),
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+      }, {
+        headers: localStorage.getItem("token")
+          ? { Authorization: `Bearer ${localStorage.getItem("token")}` }
+          : {},
       });
       if (!response.data?.status) {
         throw new Error(response.data?.message || "Onboarding checkout could not be started.");
       }
       if (response.data.complete) {
         toast.success(response.data.message || "Onboarding is complete. Please log in.");
-        navigate("/my-account/", {
-          replace: true,
-          state: { onboardingComplete: true },
-        });
+        navigate("/my-account/orders", { replace: true });
         return;
       }
       if (!response.data.clientSecret) {
@@ -157,14 +196,18 @@ const OnboardingCheckoutPage = () => {
             Place My Films
           </p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-            Filmmaker onboarding
+            Checkout cart
           </h1>
           <p className="mt-3 max-w-xl leading-7 text-white/65">
             The one-time onboarding payment is $25.00. Once your account is set up, submitting films is free.
             Festival entry fees are charged separately only when you enter a festival.
           </p>
 
-          {!clientSecret ? (
+          {checkingAccount ? (
+            <p role="status" className="mt-8 text-sm text-white/70">
+              Checking your filmmaker account...
+            </p>
+          ) : !clientSecret ? (
             <form onSubmit={startCheckout} className="mt-8 space-y-5">
               <label className="block text-sm font-medium text-white/80">
                 First name
@@ -173,6 +216,7 @@ const OnboardingCheckoutPage = () => {
                   autoComplete="given-name"
                   value={firstName}
                   onChange={(event) => setFirstName(event.target.value)}
+                  readOnly={Boolean(localStorage.getItem("token"))}
                   required
                 />
               </label>
@@ -183,6 +227,7 @@ const OnboardingCheckoutPage = () => {
                   autoComplete="family-name"
                   value={lastName}
                   onChange={(event) => setLastName(event.target.value)}
+                  readOnly={Boolean(localStorage.getItem("token"))}
                   required
                 />
               </label>
@@ -195,6 +240,7 @@ const OnboardingCheckoutPage = () => {
                   maxLength={100}
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
+                  readOnly={Boolean(localStorage.getItem("token"))}
                   required
                 />
               </label>
@@ -206,6 +252,7 @@ const OnboardingCheckoutPage = () => {
                   autoComplete="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
+                  readOnly={Boolean(localStorage.getItem("token"))}
                   required
                 />
               </label>

@@ -47,7 +47,9 @@ export const API_ENDPOINTS = {
     UPDATE_BILLING_BY_USER: (userId) => `${API_BASE_URL}/payapi/updateBillingByUserID/${userId}`,
     CREATE_BILLING: `${API_BASE_URL}/payapi/createBilling`,
     GET_PAYMENT_DETAILS_BY_USER: (userId) => `${API_BASE_URL}/payapi/payment-detailsbyuserid/${userId}`,
+    GET_USER_PAYMENT_HISTORY: `${API_BASE_URL}/payapi/payment-history`,
     PAY_STRIPE: `${API_BASE_URL}/payapi/payStripe`,
+    ONBOARDING_STATUS: `${API_BASE_URL}/payapi/onboarding/status`,
     ONBOARDING_PAYMENT_INTENT: `${API_BASE_URL}/payapi/onboarding/payment-intent`,
     COMPLETE_ONBOARDING: `${API_BASE_URL}/payapi/onboarding/complete`,
 }

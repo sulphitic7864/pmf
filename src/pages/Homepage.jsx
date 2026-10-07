@@ -2,7 +2,7 @@ import { cardDetails, images } from '../constants/constants'
 import HomeSlider from '../components/HomeSlider'
 import { motion } from 'framer-motion'
 import StepCard from '../components/StepCard'
-import { Link } from 'react-router-dom'
+import SubmitFilmCTA from '../components/SubmitFilmCTA'
 
 const Homepage = () => {
 
@@ -72,22 +72,12 @@ const Homepage = () => {
                         transition={{ duration: 0.55, delay: 0.2 }}
                         className='mt-9 flex flex-col items-center gap-3 sm:mt-11'
                     >
-                        <Link
-                            to='/onboarding'
+                        <SubmitFilmCTA
                             className='group inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-gradient-to-b from-sky-500 to-[#00D0B8] px-8 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_10px_30px_rgba(0,190,210,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgba(0,190,210,0.28)] focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-4 focus:ring-offset-[#03080b]'
                         >
                             Submit your film
                             <span aria-hidden='true' className='text-lg transition-transform group-hover:translate-x-1'>→</span>
-                        </Link>
-                        <div className='flex flex-col items-center gap-2 text-sm text-white/80 sm:flex-row'>
-                            <p>If you already have an existing account, please login to your dashboard.</p>
-                            <Link
-                                to='/my-account/'
-                                className='inline-flex min-h-9 items-center justify-center rounded-full border border-cyan-300/50 px-5 py-1.5 font-bold uppercase tracking-wide text-cyan-100 transition-colors hover:bg-cyan-300/10 focus:outline-none focus:ring-2 focus:ring-cyan-300'
-                            >
-                                Login
-                            </Link>
-                        </div>
+                        </SubmitFilmCTA>
                     </motion.div>
                     </motion.div>
                 </div>

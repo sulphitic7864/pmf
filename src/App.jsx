@@ -15,6 +15,7 @@ import BlogView from './pages/BlogView'
 import Specifications from './pages/Specifications'
 import Contestpage from './pages/Contestpage'
 import OnboardingCheckoutPage from './pages/OnboardingCheckoutPage'
+import SubmitFilmRoute from './pages/SubmitFilmRoute'
 const App = () => {
   return (
 
@@ -25,6 +26,7 @@ const App = () => {
             <Route path="/about" element={<Template><Aboutpage/></Template>} />
             <Route path="/contest" element={<Template><Contestpage/></Template>} />
             <Route path="/onboarding" element={<Template><OnboardingCheckoutPage/></Template>} />
+            <Route path="/submit-film" element={<Template><SubmitFilmRoute/></Template>} />
             {/* <Route path="/contest" element={<Template><Pricingpage/></Template>} /> */}
             <Route path="/product/:packageid" element={<Template><PackageProducts/></Template>} />
             <Route path="/blog" element={<Template><Blogpage/></Template>} />
