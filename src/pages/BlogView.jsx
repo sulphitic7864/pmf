@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { FaFacebook, FaTiktok, FaInstagram, FaYoutube } from 'react-icons/fa';
 import { getBlogById } from '../server/api_endpoints';
 import { images } from '../constants/constants';
-import { User, Calendar, Eye, Tag } from "lucide-react";
+import { User, Calendar, Tag } from "lucide-react";
 
 const BlogView = () => {
   const { id } = useParams();
@@ -112,6 +112,12 @@ const BlogView = () => {
               size={24} 
               className="cursor-pointer hover:text-red-500 transition-colors" 
               onClick={() => window.open("https://www.youtube.com/channel/UC6dQ8Wn_Ng5H_t2tAAjDHFg", "_blank")} 
+            />
+            <FaTiktok
+              size={24}
+              className="cursor-pointer transition-colors hover:text-cyan-300"
+              aria-label="Place My Films on TikTok"
+              onClick={() => window.open("https://www.tiktok.com/@placemyfilms", "_blank", "noopener,noreferrer")}
             />
           </div>
         </div>
