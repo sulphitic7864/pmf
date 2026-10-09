@@ -5,61 +5,101 @@ const PaymentContent = () => {
   const [paymentData, setPaymentData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
   const token = localStorage.getItem('token');
 
   useEffect(() => {
+    const controller = new AbortController();
     if (!token) {
       setLoading(false);
-      return;
+      return () => controller.abort();
     }
 
     const fetchPaymentHistory = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const response = await fetch(API_ENDPOINTS.GET_USER_PAYMENT_HISTORY, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          signal: controller.signal,
+          headers: { Authorization: `Bearer ${token}` },
         });
-        const data = await response.json();
+        const responseText = await response.text();
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          throw new Error(
+            responseText.trimStart().startsWith('<')
+              ? 'The payment history endpoint returned a web page instead of API data. Check the configured backend API URL.'
+              : 'The payment history endpoint returned an invalid response.',
+          );
+        }
+
         if (!response.ok || !data.success || !Array.isArray(data.result)) {
-          throw new Error(data.message || 'Failed to fetch payment history.');
+          throw new Error(data.message || data.error || 'Failed to fetch payment history.');
         }
         setPaymentData(data.result);
       } catch (fetchError) {
-        setError(fetchError.message || 'Error fetching payment history.');
+        if (!controller.signal.aborted) {
+          setError(fetchError.message || 'Error fetching payment history.');
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     fetchPaymentHistory();
-  }, [token]);
+    return () => controller.abort();
+  }, [token, retryCount]);
 
-  const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return Number.isNaN(date.getTime())
+      ? 'Date unavailable'
+      : date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+  };
 
-  const formatCurrency = (amount, currency) => new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency.toLowerCase(),
-  }).format(Number(amount) / 100);
+  const formatCurrency = (amount, currency) => {
+    const amountInCents = Number(amount);
+    if (!Number.isFinite(amountInCents)) return 'Amount unavailable';
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: (currency || 'USD').toUpperCase(),
+      }).format(amountInCents / 100);
+    } catch {
+      return `${(amountInCents / 100).toFixed(2)} ${String(currency || 'USD').toUpperCase()}`;
+    }
+  };
 
   if (!token || loading || error) {
     return (
       <div className="mx-auto min-h-64 max-w-4xl rounded-xl border border-white/10 bg-[#0b1115] p-4">
-        <div className="flex h-40 items-center justify-center">
-          <p className={error ? 'text-red-400' : 'text-gray-400'}>
-            {!token
-              ? 'Please log in to view payment history.'
-              : loading
-                ? 'Loading payment history...'
-                : error}
-          </p>
+        <div className="flex min-h-40 items-center justify-center">
+          <div className="text-center">
+            <p className={error ? 'text-red-400' : 'text-gray-400'}>
+              {!token
+                ? 'Please log in to view payment history.'
+                : loading
+                  ? 'Loading payment history...'
+                  : error}
+            </p>
+            {error && (
+              <button
+                type="button"
+                onClick={() => setRetryCount((count) => count + 1)}
+                className="mt-3 rounded-md border border-white/15 px-3 py-1.5 text-sm text-gray-200 hover:bg-white/5"
+              >
+                Try again
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -73,15 +113,15 @@ const PaymentContent = () => {
       <div className="p-4">
         {paymentData.length > 0 ? (
           <div className="space-y-4">
-            {paymentData.map((payment) => (
+            {paymentData.map((payment, index) => (
               <div
-                key={payment.pay_id}
+                key={payment.pay_id || `${payment.createdAt}-${index}`}
                 className="rounded-lg border border-gray-800 bg-gray-800 p-4 shadow-sm hover:bg-gray-750"
               >
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <p className="text-sm text-gray-400">Payment ID</p>
-                    <p className="font-medium text-gray-200">{payment.pay_id}</p>
+                    <p className="break-all font-medium text-gray-200">{payment.pay_id || '—'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-400">Amount</p>
@@ -91,7 +131,7 @@ const PaymentContent = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-400">Description</p>
-                    <p className="font-medium text-gray-200">{payment.description}</p>
+                    <p className="font-medium text-gray-200">{payment.description || 'Payment'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-400">Date</p>

@@ -4,6 +4,7 @@ import OrderContent from './OrderContent';
 import AddressContent from './AddressContent';
 import PaymentContent from './PaymentContent';
 import AccountContent from './AccountContent';
+import Specifications from '../pages/Specifications';
 
 const DashboardComponents = () => {
   const { pathname } = useLocation();
@@ -17,7 +18,7 @@ const DashboardComponents = () => {
     case '/my-account/submissions':
       return <DashboardOverview />;
     case '/my-account/specification':
-      return <DashboardOverview />;
+      return <Specifications />;
     case '/my-account/messages':
       return <MessagesScreen />;
     case '/my-account/edit-address':

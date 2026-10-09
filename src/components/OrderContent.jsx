@@ -4,16 +4,17 @@ import { toast } from 'react-toastify';
 import { API_ENDPOINTS } from '../server/api_endpoints';
 import { jwtDecode } from 'jwt-decode';
 import { FaCloudUploadAlt, FaTrash } from 'react-icons/fa';
-import Dropzone from 'react-dropzone';
 import { CgClose } from 'react-icons/cg';
 import TrackedVideoPlayer from './TrackedVideoPlayer';
+import { submissionCriteria, validateSubmissionFile } from './submissionCriteria';
 
 const OrderContent = () => {
   const [userID, setUserID] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [selectedFile, setSelectedFile] = useState();
+  const [submissionFiles, setSubmissionFiles] = useState({});
+  const [fileErrors, setFileErrors] = useState({});
   const [currentPackageType, setCurrentPackageType] = useState(null);
   const [filmTitle, setFilmTitle] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -30,15 +31,15 @@ const OrderContent = () => {
   };
 
   useEffect(() => {
-    if (!selectedFile) {
+    if (!submissionFiles.video) {
       setVideoPreviewUrl('');
       return undefined;
     }
 
-    const previewUrl = URL.createObjectURL(selectedFile);
+    const previewUrl = URL.createObjectURL(submissionFiles.video);
     setVideoPreviewUrl(previewUrl);
     return () => URL.revokeObjectURL(previewUrl);
-  }, [selectedFile]);
+  }, [submissionFiles.video]);
 
   // Get user ID from token
   useEffect(() => {
@@ -60,7 +61,12 @@ const OrderContent = () => {
     const response = await axios.post(
       API_ENDPOINTS.GET_USER_VIDEOS,
       { user_id: userID },
-      { headers: { "Content-Type": "application/json" } }
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      }
     );
 
     if (!response.data.status || !Array.isArray(response.data.result)) {
@@ -88,60 +94,72 @@ const OrderContent = () => {
     getVideosByUserId();
   }, [userID, refreshVideos]);
 
-  const handleDrop = (acceptedFiles) => {
-    setSelectedFile(acceptedFiles[0]);
+  const handleFileChange = async (field, file) => {
+    if (!file) return;
+    const rejectFile = (message) => {
+      setSubmissionFiles((current) => {
+        const nextFiles = { ...current };
+        delete nextFiles[field];
+        return nextFiles;
+      });
+      setFileErrors((current) => ({ ...current, [field]: message }));
+    };
+    const validationError = await validateSubmissionFile(field, file, currentPackageType);
+    if (validationError) {
+      rejectFile(validationError);
+      return;
+    }
+
+    setSubmissionFiles((current) => ({ ...current, [field]: file }));
+    setFileErrors((current) => ({ ...current, [field]: '' }));
     setUploadSuccess(false);
   };
 
   const handleOpenModal = (packageType) => {
     setCurrentPackageType(packageType);
     setFilmTitle('');
+    setSubmissionFiles({});
+    setFileErrors({});
     setUploadSuccess(false);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setSelectedFile(undefined);
+    setSubmissionFiles({});
+    setFileErrors({});
     setCurrentPackageType(null);
     setFilmTitle('');
     setUploadSuccess(false);
   };
 
   const handleSubmit = async () => {
-    if (!selectedFile) {
-      toast.error("❌ Please select a file!", { position: "top-right" });
+    const missingRequirements = submissionCriteria
+      .filter(({ field }) => !submissionFiles[field] || fileErrors[field])
+      .map(({ label }) => label);
+    if (!filmTitle.trim()) missingRequirements.push('Film Title');
+    if (missingRequirements.length) {
+      toast.error(`Complete these required items: ${missingRequirements.join(', ')}.`, { position: "top-right", autoClose: 7000 });
       return;
     }
-    if (!filmTitle.trim()) {
-      toast.error("Please enter a film title.", { position: "top-right" });
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please log in again before submitting your film.", { position: "top-right" });
       return;
     }
 
     setUploadLoading(true);
 
     try {
-      // Check file size
-      const maxSizeBytes = currentPackageType === "99" ? 500 * 1024 * 1024 : 3 * 1024 * 1024 * 1024;
-      const maxSizeLabel = currentPackageType === "99" ? "500 MB" : "3 GB";
-      if (selectedFile.size > maxSizeBytes) {
-        toast.warning(`File size should be less than ${maxSizeLabel}.`, {
-          position: "top-right",
-        });
-        setUploadLoading(false);
-        return;
-      }
-
-      // Proceed with upload
-      toast.info("⏳ Uploading video, please wait...", { position: "top-right" });
-      
       const formData = new FormData();
-      formData.append("video", selectedFile);
-      formData.append("user_id", userID);
       formData.append("packageType", currentPackageType);
       formData.append("title", filmTitle.trim());
+      submissionCriteria.forEach(({ field }) => formData.append(field, submissionFiles[field]));
 
-      const response = await axios.post(API_ENDPOINTS.UPLOAD_VIDEO, formData);
+      const response = await axios.post(API_ENDPOINTS.UPLOAD_VIDEO, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (response.data.response_code === 200 || response.data.status === true) {
         toast.success("✅ File uploaded successfully!", {
@@ -149,7 +167,6 @@ const OrderContent = () => {
           autoClose: 3000,
         });
         setUploadSuccess(true);
-        setSelectedFile(undefined);
         try {
           await refreshVideos();
         } catch (refreshError) {
@@ -159,16 +176,20 @@ const OrderContent = () => {
             autoClose: 5000,
           });
         }
-        setUploadLoading(false);
       } else {
         throw new Error(response.data.message || "The server did not confirm the video upload.");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error(error.response?.data?.message || "Error uploading file. Please try again!", {
+      const responseBody = error.response?.data;
+      const errorMessage = typeof responseBody === 'string' && responseBody.trimStart().startsWith('<')
+        ? 'The upload endpoint returned a web page instead of API data. Check the configured backend API URL.'
+        : responseBody?.message || error.message || "Error uploading file. Please try again!";
+      toast.error(errorMessage, {
         position: "top-right",
         autoClose: 3000,
       });
+    } finally {
       setUploadLoading(false);
     }
   };
@@ -257,7 +278,9 @@ const OrderContent = () => {
           >
             <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#0b1115]/95 px-5 py-4 backdrop-blur sm:px-7">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-cyan-300">Short film submission</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-cyan-300">
+                  {currentPackageType === "99" ? "Short film submission" : "Feature film submission"}
+                </p>
                 <h2 id="upload-modal-title" className="mt-1 text-xl font-semibold capitalize">Upload a film</h2>
               </div>
               <button
@@ -288,68 +311,73 @@ const OrderContent = () => {
 
               {uploadSuccess && (
                 <p role="status" className="rounded-lg border border-emerald-300/20 bg-emerald-300/[0.08] px-4 py-3 text-sm font-medium text-emerald-200">
-                  Your film was uploaded successfully and added to your submissions.
+                  All required items were validated and your film was uploaded successfully.
                 </p>
               )}
 
               <div className="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-3 text-sm text-gray-300">
-                <p className="capitalize"   >Accepted format: MP4</p>
-                <p className="mt-1 capitalize">Maximum file size: {currentPackageType === "99" ? "500 MB" : "3 GB"}</p>
-                <p className="mt-1 text-gray-400">Duration must be 15min minimum, 30min maximum.</p>
+                <p>Complete all eight required items below. Artwork pixel dimensions and file formats are checked before upload.</p>
+                <p className="mt-2">Video: MP4 · Maximum size: {currentPackageType === "99" ? "500 MB" : "3 GB"}</p>
+                <p className="mt-1 text-gray-400">Duration must be 15 minutes minimum and 30 minutes maximum.</p>
               </div>
 
-              <Dropzone
-                multiple={false}
-                disabled={uploadLoading || uploadSuccess}
-                accept={{ 'video/mp4': ['.mp4'] }}
-                maxSize={currentPackageType === "99" ? 500 * 1024 * 1024 : 3 * 1024 * 1024 * 1024}
-                onDropAccepted={handleDrop}
-                onDropRejected={() => toast.error(`Please select an MP4 video within the ${currentPackageType === "99" ? "500 MB" : "3 GB"} size limit.`)}
-              >
-                {({ getRootProps, getInputProps, isDragActive }) => (
-                  <div
-                    {...getRootProps()}
-                    className={`flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-5 text-center transition-colors sm:min-h-52 ${
-                      isDragActive
-                        ? 'border-cyan-300 bg-cyan-300/10'
-                        : 'border-white/20 bg-black/20 hover:border-cyan-300/60 hover:bg-cyan-300/[0.03]'
-                    }`}
-                  >
-                    <input {...getInputProps()} aria-label="Choose MP4 film file" />
-                    {selectedFile ? (
-                      <div className="w-full">
-                        <video
-                          src={videoPreviewUrl}
-                          controls
-                          className="mx-auto max-h-64 w-full max-w-lg rounded-lg bg-black"
-                        />
-                        <div className="mt-3 flex items-center justify-center gap-2">
-                          <p className="max-w-[80%] truncate text-sm text-cyan-200">{selectedFile.name}</p>
-                          <button
-                            type="button"
-                            aria-label="Remove selected video"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setSelectedFile(undefined);
-                            }}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-rose-400 hover:bg-rose-400/10"
-                          >
-                            <FaTrash />
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <FaCloudUploadAlt className="mb-3 text-4xl text-cyan-300" />
-                        <p className="text-sm font-medium text-gray-200">
-                          {isDragActive ? 'Drop your video here' : 'Drag and drop your MP4 here'}
-                        </p>
-                        <p className="mt-1 text-xs text-gray-500">or click to browse files</p>
-                      </>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {submissionCriteria.map(({ field, label, accept, dimensions }) => (
+                  <div key={field} className="min-w-0 rounded-xl border border-white/10 bg-black/20 p-3">
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium text-gray-100">{label}</p>
+                      <span className={`shrink-0 text-[10px] font-semibold uppercase tracking-wide ${submissionFiles[field] ? 'text-emerald-300' : 'text-amber-300'}`}>
+                        {submissionFiles[field] ? 'Ready' : 'Required'}
+                      </span>
+                    </div>
+                    {dimensions && (
+                      <p className="mb-2 text-xs text-gray-500">Exact image size: {dimensions[0]} × {dimensions[1]} px</p>
+                    )}
+                    <input
+                      id={`submission-${field}`}
+                      type="file"
+                      accept={accept}
+                      disabled={uploadLoading || uploadSuccess}
+                      className="peer sr-only"
+                      onChange={(event) => {
+                        handleFileChange(field, event.target.files?.[0]);
+                        event.target.value = '';
+                      }}
+                    />
+                    <label
+                      htmlFor={`submission-${field}`}
+                      className="flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-cyan-300/25 bg-cyan-300/[0.06] px-3 py-2 text-center text-xs font-semibold text-cyan-200 transition-colors hover:border-cyan-300/60 hover:bg-cyan-300/10 peer-focus-visible:ring-2 peer-focus-visible:ring-cyan-300 peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+                    >
+                      <FaCloudUploadAlt className="shrink-0" />
+                      <span className="max-w-full truncate">{submissionFiles[field]?.name || 'Choose file'}</span>
+                    </label>
+                    {submissionFiles[field] && (
+                      <button
+                        type="button"
+                        onClick={() => setSubmissionFiles((current) => {
+                          const nextFiles = { ...current };
+                          delete nextFiles[field];
+                          return nextFiles;
+                        })}
+                        disabled={uploadLoading || uploadSuccess}
+                        className="mt-2 inline-flex items-center gap-1 text-xs text-rose-300 hover:text-rose-200 disabled:opacity-50"
+                      >
+                        <FaTrash size={11} /> Remove file
+                      </button>
+                    )}
+                    {fileErrors[field] && (
+                      <p role="alert" className="mt-2 text-xs text-rose-300">{fileErrors[field]}</p>
+                    )}
+                    {field === 'video' && submissionFiles.video && (
+                      <video
+                        src={videoPreviewUrl}
+                        controls
+                        className="mt-3 max-h-48 w-full rounded-lg bg-black"
+                      />
                     )}
                   </div>
-                )}
-              </Dropzone>
+                ))}
+              </div>
 
               <div className="flex flex-col-reverse justify-end gap-3 border-t border-white/10 pt-4 sm:flex-row">
                 <button

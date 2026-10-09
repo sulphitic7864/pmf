@@ -77,7 +77,6 @@ export const CartProvider = ({ children }) => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [subtotal, setSubtotal] = useState(0);
   const [discount, setDiscount] = useState(0);
-  const [selectedFile, setSelectedFile] = useState(undefined);
 
   const addToCart = (packageItem) => {
     const itemExists = cart.some((item) => item.id === packageItem.id);
@@ -123,12 +122,10 @@ export const CartProvider = ({ children }) => {
         subtotal, 
         totalAmount, 
         discount, 
-        selectedFile, 
         addToCart,
         setCart,
         removeFromCart, 
-        applyCoupon, 
-        setSelectedFile 
+        applyCoupon,
       }}
     >
       {children}

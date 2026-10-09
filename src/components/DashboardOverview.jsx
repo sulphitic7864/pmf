@@ -16,7 +16,6 @@ import {
 } from 'lucide-react'
 import { API_ENDPOINTS } from '../server/api_endpoints'
 import cameraman from '../assets/images/cameraman.png'
-import DashboardSpecifications from './DashboardSpecifications'
 import TrackedVideoPlayer from './TrackedVideoPlayer'
 
 const getFileName = (url, fallback) => {
@@ -169,7 +168,6 @@ const DashboardOverview = () => {
   return (
     <div className='grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_270px] xl:grid-cols-[minmax(0,1fr)_290px]'>
       <div className='min-w-0 space-y-5'>
-        {pathname === '/my-account/specification' ? <DashboardSpecifications /> : <>
         <section className='relative isolate flex min-h-36 items-center overflow-hidden rounded-xl border border-white/10 bg-[#0b1217] px-5 py-6 sm:px-8'>
           <img src={cameraman} alt='' aria-hidden='true' className='absolute inset-0 -z-20 h-full w-full object-cover object-[center_42%] opacity-40' />
           <div className='absolute inset-0 -z-10 bg-gradient-to-r from-[#071015] via-[#071015]/90 to-[#071015]/20' />
@@ -188,7 +186,7 @@ const DashboardOverview = () => {
             <div key={label} className='min-w-0 rounded-xl border border-white/10 bg-[#0b1115] p-4'>
               <div className={`flex h-9 w-9 items-center justify-center rounded-full ${tint}`}><Icon size={18} /></div>
               <p className='mt-3 truncate text-xl font-semibold tabular-nums sm:text-2xl'>{value}</p>
-              <p className='mt-1 text-xs leading-5 text-gray-400'>{label}</p>
+              <p className='mt-1 text-xs leading-5 text-gray-400 capitalize'>{label}</p>
             </div>
           ))}
         </section>
@@ -202,27 +200,26 @@ const DashboardOverview = () => {
                 <p className='mt-1 max-w-xl text-sm leading-6 text-gray-400'>Your upload space is ready. Choose a film package to add a video to your account.</p>
               </div>
             </div>
-            <Link to='/my-account/orders' className='inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-[#031015] transition-opacity hover:opacity-90'>Manage uploads <ArrowRight size={16} /></Link>
+            <Link to='/my-account/orders' className='inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-[#031015] transition-opacity hover:opacity-90 capitalize'>Manage uploads <ArrowRight size={16} /></Link>
           </div>
           <div className='mt-5 grid gap-3 border-t border-white/10 pt-5 sm:grid-cols-2'>
             <div className='rounded-lg border border-dashed border-white/15 bg-black/20 p-4'>
-              <p className='text-sm font-medium'>Short film</p>
+              <p className='text-sm font-medium capitalize'>Short film</p>
               <p className='mt-1 text-xs leading-5 text-gray-400'>For purchased short-film upload credits. Check package requirements before uploading.</p>
             </div>
             <div className='rounded-lg border border-dashed border-white/15 bg-black/20 p-4'>
-              <p className='text-sm font-medium'>Feature film</p>
+              <p className='text-sm font-medium capitalize'>Feature film</p>
               <p className='mt-1 text-xs leading-5 text-gray-400'>For purchased feature-film upload credits. Supported formats and limits are shown during upload.</p>
             </div>
           </div>
         </section>
-        </>}
       </div>
 
       <aside className='min-w-0 space-y-5'>
         <section className='rounded-xl border border-white/10 bg-[#0b1115] p-4 shadow-[0_16px_45px_rgba(0,0,0,0.18)]'>
           <div className='flex items-center justify-between gap-3 border-b border-white/10 pb-3'>
             <div>
-              <h2 className='text-sm font-semibold'>Recent submissions</h2>
+              <h2 className='text-sm font-semibold capitalize'>Recent submissions</h2>
               <p className='mt-1 text-[11px] text-gray-500'>Your latest 2 films</p>
             </div>
             <Link to='/my-account/submissions' className='inline-flex items-center gap-1 rounded-full border border-cyan-300/20 bg-cyan-300/[0.06] px-2.5 py-1.5 text-[11px] font-medium text-cyan-200 transition-colors hover:border-cyan-300/40 hover:bg-cyan-300/10'>
@@ -294,10 +291,10 @@ const DashboardOverview = () => {
           <h2 className='border-b border-white/10 pb-3 text-sm font-semibold'>Quick links</h2>
           <div className='mt-1 divide-y divide-white/10'>
             {[
-              { label: 'Submission guidelines', to: '/my-account/specification', icon: FileVideo2 },
+              { label: 'Submission Guidelines', to: '/my-account/specification', icon: FileVideo2 },
               { label: 'Enter Film Festival', to: '/contest', icon: FolderOpen },
             ].map(({ label, to, icon: Icon }) => (
-              <Link key={to} to={to} className='flex min-h-12 items-center gap-3 text-xs text-gray-300 transition-colors hover:text-cyan-200'>
+              <Link key={to} to={to} className='flex min-h-12 items-center capitalize gap-3 text-xs text-gray-300 transition-colors hover:text-cyan-200'>
                 <Icon size={18} className='text-cyan-300' />
                 <span className='flex-1'>{label}</span>
                 <ArrowRight size={14} className='text-gray-500' />
@@ -309,7 +306,7 @@ const DashboardOverview = () => {
         <section className='rounded-xl border border-cyan-300/20 bg-gradient-to-br from-cyan-400/[0.08] to-transparent p-4'>
           <div className='flex items-center gap-2 text-cyan-200'><CircleHelp size={19} /><h2 className='text-sm font-semibold'>Need a hand?</h2></div>
           <p className='mt-2 text-xs leading-5 text-gray-400'>Our team can help with package or upload questions.</p>
-          <Link to='/contact' className='mt-4 inline-flex min-h-9 items-center rounded-md border border-cyan-300/50 px-3 text-xs font-medium text-cyan-200 hover:bg-cyan-300/10'>Contact support</Link>
+          <Link to='/contact' className='mt-4 inline-flex min-h-9 items-center rounded-md border border-cyan-300/50 px-3 text-xs font-medium text-cyan-200 hover:bg-cyan-300/10 capitalize'>Contact support</Link>
         </section>
       </aside>
     </div>

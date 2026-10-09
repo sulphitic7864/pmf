@@ -21,6 +21,7 @@ import {
 import { useSearchParams } from "react-router-dom";
 import { CartContext } from "../constants/CartContext";
 import { useNavigate } from "react-router-dom";
+import { submissionCriteria, validateSubmissionFile } from "../components/submissionCriteria";
 
 // Initialize Stripe with your publishable key
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
@@ -64,13 +65,34 @@ const CheckoutPage = () => {
   const [loginPassword, setLoginPassword] = useState("");
   const [authError, setAuthError] = useState("");
   const [filmTitle, setFilmTitle] = useState("");
-  const [filmFile, setFilmFile] = useState(null);
+  const [submissionFiles, setSubmissionFiles] = useState({});
+  const [submissionFileErrors, setSubmissionFileErrors] = useState({});
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const { cart, subtotal, totalAmount, discount, setCart } =
     useContext(CartContext);
   const festivalPackageId = searchParams.get("packageId") || String(cart[0]?.id || cart[0]?.packageid || "");
+
+  const handleSubmissionFileChange = async (field, file) => {
+    if (!file) return;
+    const validationError = await validateSubmissionFile(
+      field,
+      file,
+      String(festivalPackageId) === "1" ? "99" : "299",
+    );
+    if (validationError) {
+      setSubmissionFiles((current) => {
+        const nextFiles = { ...current };
+        delete nextFiles[field];
+        return nextFiles;
+      });
+      setSubmissionFileErrors((current) => ({ ...current, [field]: validationError }));
+      return;
+    }
+    setSubmissionFiles((current) => ({ ...current, [field]: file }));
+    setSubmissionFileErrors((current) => ({ ...current, [field]: "" }));
+  };
 
   useEffect(() => {
     const fetchCountries = () => {
@@ -337,24 +359,35 @@ const CheckoutPage = () => {
             <h2 className="text-xl font-semibold sm:text-2xl">Film details</h2>
             <p className="mt-1 text-sm text-white/55">Tell us about the film you’re submitting.</p>
           </div>
-          <label className="block text-sm font-medium text-white/80">Film title
-            <input className={`${checkoutInputClass} mt-1`} type="text" value={filmTitle} onChange={(event) => setFilmTitle(event.target.value)} required />
+          <label className="block text-sm font-medium text-white/80">Film Title
+            <input className={`${checkoutInputClass} mt-1`} type="text" value={filmTitle} onChange={(event) => setFilmTitle(event.target.value)} maxLength={255} required />
           </label>
-          <label className="block text-sm font-medium text-white/80">Film file
-            <input className={`${checkoutInputClass} mt-1 cursor-pointer file:mr-4 file:rounded file:border-0 file:bg-cyan-400/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-cyan-200`} type="file" accept="video/*,.mov" onChange={(event) => {
-              const file = event.target.files?.[0] || null;
-              const maxSize = String(festivalPackageId) === "1" ? 500 * 1024 * 1024 : 3 * 1024 * 1024 * 1024;
-              if (file && file.size > maxSize) {
-                setFilmFile(null);
-                event.target.value = "";
-                setErrorMessage(`This festival accepts video files up to ${String(festivalPackageId) === "1" ? "500 MB" : "3 GB"}.`);
-                return;
-              }
-              setFilmFile(file);
-              setErrorMessage("");
-            }} required />
-          </label>
-          {filmFile && <p className="text-xs text-gray-400">Selected: {filmFile.name}</p>}
+          <div>
+            <p className="mb-2 text-sm font-medium text-white/80">Required Upload Criteria</p>
+            <p className="mb-3 text-xs text-gray-400">Every item is required before payment and submission. Key art must match the listed pixel dimensions.</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {submissionCriteria.map(({ field, label, accept, dimensions }) => (
+                <div key={field} className="min-w-0 rounded-lg border border-white/10 bg-black/20 p-3">
+                  <label htmlFor={`checkout-${field}`} className="mb-2 block text-xs font-medium text-gray-200">
+                    {label} <span className="text-cyan-300">*</span>
+                  </label>
+                  {dimensions && <p className="mb-2 text-[11px] text-gray-500">Exact size: {dimensions[0]} × {dimensions[1]} px</p>}
+                  <input
+                    id={`checkout-${field}`}
+                    className="block w-full text-xs text-gray-300 file:mr-3 file:rounded-md file:border-0 file:bg-cyan-300/10 file:px-3 file:py-2 file:font-medium file:text-cyan-200"
+                    type="file"
+                    accept={accept}
+                    onChange={(event) => {
+                      handleSubmissionFileChange(field, event.target.files?.[0]);
+                      event.target.value = "";
+                    }}
+                  />
+                  {submissionFiles[field] && <p className="mt-2 truncate text-xs text-emerald-200">{submissionFiles[field].name}</p>}
+                  {submissionFileErrors[field] && <p role="alert" className="mt-2 text-xs text-rose-300">{submissionFileErrors[field]}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
           {message && <p role="alert" className="text-sm text-red-300">{message}</p>}
           </section>
           <section className="space-y-4 border-t border-white/10 pt-5">
@@ -546,7 +579,7 @@ const CheckoutPage = () => {
               user_name={user_name}
               festivalPackageId={festivalPackageId}
               filmTitle={filmTitle}
-              filmFile={filmFile}
+              submissionFiles={submissionFiles}
               setCart={setCart}
             />
           </Elements>
@@ -577,7 +610,7 @@ const CheckoutForm = ({
   user_name,
   festivalPackageId,
   filmTitle,
-  filmFile,
+  submissionFiles, // eslint-disable-line react/prop-types
   setCart,
 }) => {
   const stripe = useStripe();
@@ -606,8 +639,12 @@ const CheckoutForm = ({
       return;
     }
 
-    if (!filmTitle.trim() || !filmFile) {
-      setErrorMessage("Enter a film title and select the film file before paying.");
+    const missingRequirements = submissionCriteria
+      .filter(({ field }) => !submissionFiles[field])
+      .map(({ label }) => label);
+    if (!filmTitle.trim()) missingRequirements.push("Film Title");
+    if (missingRequirements.length) {
+      setErrorMessage(`Complete these required items before paying: ${missingRequirements.join(", ")}.`);
       setIsSubmitting(false);
       return;
     }
@@ -670,7 +707,7 @@ const CheckoutForm = ({
         ...paymentDetails,
         email_add: emailAddress,
       }));
-      submissionData.append("video", filmFile);
+      submissionCriteria.forEach(({ field }) => submissionData.append(field, submissionFiles[field]));
 
       const response = await createpayment(submissionData, localStorage.getItem("token"));
       if (!response.status) throw new Error(response.message || "Submission could not be saved.");

@@ -1,27 +1,20 @@
-import React, { useState, useEffect, useContext } from "react";
-import VideoModal from "../components/Modal/VideoModal";
+import { useState, useContext } from "react";
 import { CartContext } from "../constants/CartContext";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const CartPage = () => {
-  const [cartTotal, setCartTotal] = useState(0);
-  const [showModal, setShowModal] = useState(false);
   const { 
     cart, 
     subtotal, 
     totalAmount, 
     discount, 
     applyCoupon, 
-    selectedFile, 
-    setSelectedFile,
     removeFromCart 
   } = useContext(CartContext);
   const [couponCode, setCouponCode] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
-  const { packageid } = useParams();
-
   const handleApplyCoupon = async () => {
     const result = await applyCoupon(couponCode);
     if (result) {
@@ -116,6 +109,7 @@ const CartPage = () => {
             Apply coupon
           </button>
         </div>
+        {message && <p role="status" className="mt-2 text-sm text-cyan-200">{message}</p>}
         <h3>Discount: ${discount}</h3>
       </div>
 
@@ -139,9 +133,6 @@ const CartPage = () => {
         </div>
       </div>
     </div>
-    {showModal && 
-      <VideoModal setShowModal={setShowModal} selectedFile={selectedFile} setSelectedFile={setSelectedFile}/>
-    }
     </>
   );
 };
