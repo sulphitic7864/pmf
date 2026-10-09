@@ -4,10 +4,10 @@ import { jwtDecode } from 'jwt-decode'
 import { Link, useLocation } from 'react-router-dom'
 import {
   ArrowRight,
-  Bell,
   CheckCircle2,
   CircleHelp,
   CloudUpload,
+  CircleX,
   FileVideo2,
   FolderOpen,
   Eye,
@@ -42,12 +42,62 @@ const getSubmissionTimestamp = (video) => {
   return Number.isNaN(timestamp) ? null : timestamp
 }
 
+export const RejectionReasonDialog = ({ selectedReason, onClose }) => {
+  if (!selectedReason) return null
+
+  return (
+    <div
+      className='fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4'
+      onClick={onClose}
+    >
+      <section
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='rejection-reason-title'
+        className='w-full max-w-lg rounded-xl border border-white/10 bg-[#10191f] p-5 shadow-2xl'
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className='flex items-start justify-between gap-4'>
+          <div>
+            <p className='text-xs font-semibold uppercase tracking-wide text-rose-300'>Submission review</p>
+            <h2 id='rejection-reason-title' className='mt-1 text-lg font-semibold text-white'>
+              Rejection reason
+            </h2>
+            <p className='mt-1 text-sm text-gray-400'>{selectedReason.title}</p>
+          </div>
+          <button
+            type='button'
+            onClick={onClose}
+            aria-label='Close rejection reason'
+            className='rounded-md px-2 py-1 text-xl leading-none text-gray-400 hover:bg-white/10 hover:text-white'
+          >
+            ×
+          </button>
+        </div>
+        <p className='mt-5 max-h-[50vh] overflow-y-auto whitespace-pre-wrap break-words text-sm leading-6 text-gray-200'>
+          {selectedReason.reason}
+        </p>
+        <div className='mt-5 flex justify-end'>
+          <button
+            type='button'
+            onClick={onClose}
+            className='rounded-md border border-cyan-300/40 px-4 py-2 text-sm font-medium text-cyan-200 hover:bg-cyan-300/10'
+          >
+            Close
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 const DashboardOverview = () => {
   const { pathname } = useLocation()
   const [accountName, setAccountName] = useState('Filmmaker')
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
   const [playingVideoUrl, setPlayingVideoUrl] = useState(null)
+  const [selectedReason, setSelectedReason] = useState(null)
   const token = localStorage.getItem('token')
 
   useEffect(() => {
@@ -95,10 +145,6 @@ const DashboardOverview = () => {
       return b.index - a.index
     })
     .slice(0, 2)
-  const submissionUpdates = videos
-    .filter((video) => ['approved', 'rejected'].includes(video.submissionStatus) && video.reviewedAt)
-    .sort((a, b) => new Date(b.reviewedAt).getTime() - new Date(a.reviewedAt).getTime())
-    .slice(0, 5)
   const updateViewCount = (videoId, viewCount) => {
     setVideos((currentVideos) => currentVideos.map((video) => (
       video.id === videoId ? { ...video, viewCount } : video
@@ -123,37 +169,79 @@ const DashboardOverview = () => {
           ) : videos.length ? (
             <div className='divide-y divide-white/10'>
               {videos.map((video, index) => (
-                <div key={video.id || video.url || index} className='flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between'>
-                  <div className='flex min-w-0 items-center gap-3'>
+                <div
+                  key={video.id || video.url || index}
+                  className='grid grid-cols-1 items-center gap-x-5 gap-y-4 px-5 py-5 lg:grid-cols-12'
+                >
+                  <div className='flex min-w-0 items-center gap-3 lg:col-span-3'>
                     <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-400/10 text-cyan-300'><FileVideo2 size={20} /></span>
                     <div className='min-w-0'>
-                      <p className='truncate text-sm font-medium'>{video.title || getFileName(video.url, `Film submission ${index + 1}`)}</p>
-                      <p className='mt-1 text-xs text-gray-500'>
+                      <p className='truncate text-sm font-semibold text-white'>{video.title || getFileName(video.url, `Film submission ${index + 1}`)}</p>
+                      <p className='mt-1 line-clamp-2 text-xs leading-5 text-gray-500'>
                         {video.festivalTitle || `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`}
                       </p>
                     </div>
                   </div>
                   {video.url && (
-                    <TrackedVideoPlayer
-                      video={video}
-                      className='w-full rounded-md sm:w-44'
-                      onViewCountChange={updateViewCount}
-                    />
+                    <div className='min-w-0 lg:col-span-3'>
+                      <TrackedVideoPlayer
+                        video={video}
+                        className='aspect-video w-full rounded-md'
+                        onViewCountChange={updateViewCount}
+                      />
+                    </div>
                   )}
-                  <div className='flex items-center justify-between gap-4 sm:justify-end'>
-                    <span className='inline-flex items-center gap-1.5 text-xs text-cyan-200'><Eye size={14} /> {Number(video.viewCount || 0)} views</span>
-                    <span className={`inline-flex items-center gap-1.5 text-xs ${video.submissionStatus === 'rejected' ? 'text-rose-300' : video.submissionStatus === 'approved' ? 'text-emerald-300' : 'text-cyan-200'}`}>
-                      <CheckCircle2 size={14} /> {(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}
+                  {!video.url && <div className='hidden lg:col-span-3 lg:block' />}
+                  <div className='flex flex-wrap items-center gap-x-4 gap-y-2 lg:col-span-2 lg:flex-col lg:items-start lg:gap-2'>
+                    <span className='inline-flex items-center gap-1.5 text-xs text-cyan-200'>
+                      <Eye size={14} /> {Number(video.viewCount || 0)} views
+                    </span>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${
+                      video.submissionStatus === 'rejected'
+                        ? 'border-rose-300/20 bg-rose-300/[0.06] text-rose-300'
+                        : video.submissionStatus === 'approved'
+                          ? 'border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300'
+                          : 'border-cyan-300/20 bg-cyan-300/[0.06] text-cyan-200'
+                    }`}>
+                      <CheckCircle2 size={14} />
+                      {(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}
                     </span>
                   </div>
-                  {video.submissionStatus === 'rejected' && video.reviewReason && (
-                    <p className='text-sm text-rose-300 sm:max-w-64'>
-                      <span className='font-medium'>Reason:</span> {video.reviewReason}
-                    </p>
-                  )}
-                  <div className='text-xs text-gray-400 sm:w-36 sm:text-right'>
+                  <div className='min-w-0 lg:col-span-3'>
+                    {video.submissionStatus === 'rejected' && video.reviewReason ? (
+                      <>
+                        <p className='text-xs font-semibold text-rose-300'>Reason</p>
+                        <button
+                          type='button'
+                          onClick={() => setSelectedReason({
+                            title: video.title || `Film submission #${video.id}`,
+                            reason: video.reviewReason,
+                          })}
+                          className='mt-1 line-clamp-2 w-full text-left text-sm leading-5 text-gray-300 hover:text-white'
+                          aria-label={`View full rejection reason for ${video.title || `film submission ${video.id}`}`}
+                        >
+                          {video.reviewReason}
+                        </button>
+                        <button
+                          type='button'
+                          onClick={() => setSelectedReason({
+                            title: video.title || `Film submission #${video.id}`,
+                            reason: video.reviewReason,
+                          })}
+                          className='mt-1 text-xs font-semibold text-cyan-300 hover:text-cyan-200'
+                        >
+                          View full reason
+                        </button>
+                      </>
+                    ) : (
+                      <p className='text-xs text-gray-600'>No review notes</p>
+                    )}
+                  </div>
+                  <div className='text-xs text-gray-400 lg:col-span-1 lg:text-right'>
                     <p>Submitted</p>
-                    <time dateTime={video.createdAt}>{formatSubmissionDate(video.createdAt)}</time>
+                    <time className='mt-1 block whitespace-nowrap' dateTime={video.createdAt}>
+                      {formatSubmissionDate(video.createdAt)}
+                    </time>
                   </div>
                 </div>
               ))}
@@ -167,6 +255,10 @@ const DashboardOverview = () => {
             </div>
           )}
         </section>
+        <RejectionReasonDialog
+          selectedReason={selectedReason}
+          onClose={() => setSelectedReason(null)}
+        />
       </div>
     )
   }
@@ -305,30 +397,10 @@ const DashboardOverview = () => {
           )}
         </section>
 
-        {submissionUpdates.length > 0 && (
-          <section aria-label='Submission notifications' className='rounded-xl border border-cyan-300/20 bg-[#0b1115] p-4'>
-            <div className='flex items-center gap-2 border-b border-white/10 pb-3'>
-              <Bell size={17} className='text-cyan-300' />
-              <h2 className='text-sm font-semibold'>Submission notifications</h2>
-            </div>
-            <div className='divide-y divide-white/10'>
-              {submissionUpdates.map((video) => (
-                <article key={video.id} className='py-3 last:pb-0'>
-                  <p className={`text-xs font-semibold ${video.submissionStatus === 'approved' ? 'text-emerald-300' : 'text-rose-300'}`}>
-                    {video.submissionStatus === 'approved' ? 'Film approved' : 'Film not approved'}
-                  </p>
-                  <p className='mt-1 text-sm text-gray-200'>{video.title || `Film submission #${video.id}`}</p>
-                  {video.submissionStatus === 'rejected' && video.reviewReason && (
-                    <p className='mt-1 text-xs leading-5 text-gray-400'>Reason: {video.reviewReason}</p>
-                  )}
-                  <time className='mt-1 block text-[10px] text-gray-500' dateTime={video.reviewedAt}>
-                    {formatSubmissionDate(video.reviewedAt)}
-                  </time>
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
+        <RejectionReasonDialog
+          selectedReason={selectedReason}
+          onClose={() => setSelectedReason(null)}
+        />
 
         <section className='rounded-xl border border-white/10 bg-[#0b1115] p-4'>
           <h2 className='border-b border-white/10 pb-3 text-sm font-semibold'>Quick links</h2>
@@ -356,14 +428,123 @@ const DashboardOverview = () => {
   )
 }
 
-export const MessagesScreen = () => (
-  <section className='mx-auto flex min-h-[min(65vh,36rem)] max-w-3xl flex-col items-center justify-center rounded-xl border border-white/10 bg-[#0b1115] px-6 py-12 text-center'>
-    <span className='flex h-14 w-14 items-center justify-center rounded-full bg-cyan-400/10 text-cyan-300'><Mail size={25} /></span>
-    <p className='mt-5 text-xs font-semibold uppercase text-cyan-300'>Inbox</p>
-    <h1 className='mt-2 text-2xl font-semibold'>No messages yet</h1>
-    <p className='mt-3 max-w-md text-sm leading-6 text-gray-400'>Updates about your films and account messages will appear here.</p>
-    <Link to='/contact' className='mt-6 inline-flex items-center gap-2 rounded-md border border-cyan-300/40 px-4 py-2.5 text-sm font-medium text-cyan-200 hover:bg-cyan-300/10'>Contact support <ArrowRight size={16} /></Link>
-  </section>
-)
+export const MessagesScreen = () => {
+  const [messages, setMessages] = useState([])
+  const [loadingMessages, setLoadingMessages] = useState(true)
+  const [messagesError, setMessagesError] = useState('')
+  const [selectedReason, setSelectedReason] = useState(null)
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setMessagesError('Sign in to view your submission notifications.')
+      setLoadingMessages(false)
+      return undefined
+    }
+
+    let isActive = true
+    const loadMessages = async () => {
+      try {
+        const headers = { Authorization: `Bearer ${token}` }
+        const response = await axios.post(API_ENDPOINTS.GET_USER_VIDEOS, {}, { headers })
+        const notifications = (response.data?.result || [])
+          .filter((video) => ['approved', 'rejected'].includes(video.submissionStatus) && video.reviewedAt)
+          .sort((a, b) => new Date(b.reviewedAt).getTime() - new Date(a.reviewedAt).getTime())
+
+        if (isActive) setMessages(notifications)
+
+        try {
+          await axios.patch(API_ENDPOINTS.MARK_REVIEW_NOTIFICATIONS_READ, {}, { headers })
+        } catch (error) {
+          console.error('Failed to mark submission notifications as read:', error)
+        }
+      } catch (error) {
+        console.error('Failed to load submission messages:', error)
+        if (isActive) setMessagesError('Could not load your messages. Please try again.')
+      } finally {
+        if (isActive) setLoadingMessages(false)
+      }
+    }
+
+    loadMessages()
+    return () => { isActive = false }
+  }, [])
+
+  return (
+    <div className='mx-auto max-w-3xl space-y-5'>
+      <header>
+        <p className='text-xs font-semibold uppercase tracking-wide text-cyan-300'>Inbox</p>
+        <h1 className='mt-2 text-2xl font-semibold sm:text-3xl'>Messages</h1>
+        <p className='mt-2 text-sm text-gray-400'>Updates about your film submissions.</p>
+      </header>
+
+      <section className='overflow-hidden rounded-xl border border-white/10 bg-[#0b1115]'>
+        {loadingMessages ? (
+          <p className='p-6 text-center text-sm text-gray-400'>Loading messages...</p>
+        ) : messagesError ? (
+          <p role='alert' className='p-6 text-center text-sm text-rose-300'>{messagesError}</p>
+        ) : messages.length ? (
+          <div className='divide-y divide-white/10'>
+            {messages.map((video) => {
+              const rejected = video.submissionStatus === 'rejected'
+              const title = video.title || `Film submission #${video.id}`
+              return (
+                <article key={video.id} className='flex flex-col gap-3 p-5 sm:flex-row sm:items-start'>
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                    rejected ? 'bg-rose-400/10 text-rose-300' : 'bg-emerald-400/10 text-emerald-300'
+                  }`}>
+                    {rejected ? <CircleX size={19} /> : <CheckCircle2 size={19} />}
+                  </span>
+                  <div className='min-w-0 flex-1'>
+                    <div className='flex flex-wrap items-center justify-between gap-2'>
+                      <h2 className={`text-sm font-semibold ${rejected ? 'text-rose-300' : 'text-emerald-300'}`}>
+                        {rejected ? 'Film not approved' : 'Film approved'}
+                      </h2>
+                      <time className='text-xs text-gray-500' dateTime={video.reviewedAt}>
+                        {formatSubmissionDate(video.reviewedAt)}
+                      </time>
+                    </div>
+                    <p className='mt-1 text-sm text-white'>{title}</p>
+                    <p className='mt-1 text-sm leading-6 text-gray-400'>
+                      {rejected
+                        ? 'Your film submission was not approved.'
+                        : 'Good news! Your film submission has been approved.'}
+                    </p>
+                    {rejected && video.reviewReason && (
+                      <div className='mt-3 rounded-lg border border-rose-300/10 bg-rose-300/[0.04] p-3'>
+                        <p className='text-xs font-semibold text-rose-300'>Rejection reason</p>
+                        <p className='mt-1 line-clamp-2 text-sm leading-5 text-gray-300'>
+                          {video.reviewReason}
+                        </p>
+                        <button
+                          type='button'
+                          onClick={() => setSelectedReason({ title, reason: video.reviewReason })}
+                          className='mt-2 text-xs font-semibold text-cyan-300 hover:text-cyan-200'
+                        >
+                          View full reason
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        ) : (
+          <div className='flex flex-col items-center px-6 py-12 text-center'>
+            <span className='flex h-14 w-14 items-center justify-center rounded-full bg-cyan-400/10 text-cyan-300'><Mail size={25} /></span>
+            <h2 className='mt-4 text-lg font-semibold'>No messages yet</h2>
+            <p className='mt-2 max-w-md text-sm leading-6 text-gray-400'>Approval and rejection updates for your films will appear here.</p>
+            <Link to='/contact' className='mt-5 inline-flex items-center gap-2 rounded-md border border-cyan-300/40 px-4 py-2.5 text-sm font-medium text-cyan-200 hover:bg-cyan-300/10'>Contact support <ArrowRight size={16} /></Link>
+          </div>
+        )}
+      </section>
+      <RejectionReasonDialog
+        selectedReason={selectedReason}
+        onClose={() => setSelectedReason(null)}
+      />
+    </div>
+  )
+}
 
 export default DashboardOverview

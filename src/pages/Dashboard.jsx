@@ -1,14 +1,55 @@
 import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Bell, LogOut, Menu, X } from 'lucide-react'
+import axios from 'axios'
 import logo from '../assets/icons/logo.png'
 import SideBar from '../components/SideBar'
 import DashboardComponents from '../components/DashboardComponents'
+import { API_ENDPOINTS } from '../server/api_endpoints'
 
 const Dashboard = () => {
   const [showSidebar, setShowSidebar] = React.useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
+  const [unreadReviewCount, setUnreadReviewCount] = React.useState(0)
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const dashboardPath = pathname.replace(/\/+$/, '')
+
+  React.useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token || dashboardPath === '/my-account/messages') {
+      setUnreadReviewCount(0)
+      return undefined
+    }
+
+    let isActive = true
+    const refreshUnreadCount = async () => {
+      try {
+        const response = await axios.post(
+          API_ENDPOINTS.GET_USER_VIDEOS,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } },
+        )
+        const videos = response.data?.result
+        if (isActive && Array.isArray(videos)) {
+          setUnreadReviewCount(videos.filter((video) => (
+            ['approved', 'rejected'].includes(video.submissionStatus) &&
+            video.reviewedAt &&
+            !video.reviewNotificationReadAt
+          )).length)
+        }
+      } catch (error) {
+        console.error('Failed to load unread submission notifications:', error)
+      }
+    }
+
+    refreshUnreadCount()
+    const intervalId = window.setInterval(refreshUnreadCount, 30000)
+    return () => {
+      isActive = false
+      window.clearInterval(intervalId)
+    }
+  }, [dashboardPath])
 
   const handleMobileLogout = () => {
     sessionStorage.clear()
@@ -37,8 +78,13 @@ const Dashboard = () => {
           </Link>
         </div>
         <div className='flex items-center gap-3 sm:gap-5'>
-          <Link to='/my-account/messages' aria-label='Open messages' className='relative flex h-10 w-10 items-center justify-center rounded-md text-gray-300 transition-colors hover:bg-white/5 hover:text-cyan-300'>
+          <Link to='/my-account/messages' aria-label={`Open messages${unreadReviewCount ? `, ${unreadReviewCount} unread notifications` : ''}`} className='relative flex h-10 w-10 items-center justify-center rounded-md text-gray-300 transition-colors hover:bg-white/5 hover:text-cyan-300'>
             <Bell size={19} />
+            {unreadReviewCount > 0 && (
+              <span className='absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[#080d10] bg-rose-500 px-1 text-[10px] font-bold leading-none text-white'>
+                {unreadReviewCount > 99 ? '99+' : unreadReviewCount}
+              </span>
+            )}
           </Link>
           <div className='hidden h-8 border-l border-white/15 sm:block' />
           <div className='flex items-center gap-2.5'>

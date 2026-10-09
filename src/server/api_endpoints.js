@@ -35,6 +35,7 @@ export const API_ENDPOINTS = {
     GET_PACKAGE_DETAILS: `${API_BASE_URL}/payapi/getPackageById`,
     GET_ALL_BLOGS: `${API_BASE_URL}/blog/getAllBlogs`,
     GET_USER_VIDEOS: `${API_BASE_URL}/videosUpload/getByUserId`,
+    MARK_REVIEW_NOTIFICATIONS_READ: `${API_BASE_URL}/videosUpload/review-notifications/read`,
     RECORD_VIDEO_VIEW: (videoId) => `${API_BASE_URL}/videosUpload/${videoId}/view`,
     GET_USED_VIDEO_COUNTS: `${API_BASE_URL}/videosCount/getAllUsedVideoCountByUserId`,
     GET_BLOG_LIKE_COUNTS: `${API_BASE_URL}/blogReaction/getAllBlogLikeCounts`,
