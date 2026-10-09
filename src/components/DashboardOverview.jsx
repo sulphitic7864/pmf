@@ -4,6 +4,7 @@ import { jwtDecode } from 'jwt-decode'
 import { Link, useLocation } from 'react-router-dom'
 import {
   ArrowRight,
+  Bell,
   CheckCircle2,
   CircleHelp,
   CloudUpload,
@@ -94,6 +95,10 @@ const DashboardOverview = () => {
       return b.index - a.index
     })
     .slice(0, 2)
+  const submissionUpdates = videos
+    .filter((video) => ['approved', 'rejected'].includes(video.submissionStatus) && video.reviewedAt)
+    .sort((a, b) => new Date(b.reviewedAt).getTime() - new Date(a.reviewedAt).getTime())
+    .slice(0, 5)
   const updateViewCount = (videoId, viewCount) => {
     setVideos((currentVideos) => currentVideos.map((video) => (
       video.id === videoId ? { ...video, viewCount } : video
@@ -137,8 +142,15 @@ const DashboardOverview = () => {
                   )}
                   <div className='flex items-center justify-between gap-4 sm:justify-end'>
                     <span className='inline-flex items-center gap-1.5 text-xs text-cyan-200'><Eye size={14} /> {Number(video.viewCount || 0)} views</span>
-                    <span className='inline-flex items-center gap-1.5 text-xs text-emerald-300'><CheckCircle2 size={14} /> {(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}</span>
+                    <span className={`inline-flex items-center gap-1.5 text-xs ${video.submissionStatus === 'rejected' ? 'text-rose-300' : video.submissionStatus === 'approved' ? 'text-emerald-300' : 'text-cyan-200'}`}>
+                      <CheckCircle2 size={14} /> {(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}
+                    </span>
                   </div>
+                  {video.submissionStatus === 'rejected' && video.reviewReason && (
+                    <p className='text-sm text-rose-300 sm:max-w-64'>
+                      <span className='font-medium'>Reason:</span> {video.reviewReason}
+                    </p>
+                  )}
                   <div className='text-xs text-gray-400 sm:w-36 sm:text-right'>
                     <p>Submitted</p>
                     <time dateTime={video.createdAt}>{formatSubmissionDate(video.createdAt)}</time>
@@ -256,7 +268,13 @@ const DashboardOverview = () => {
                       <p className='truncate text-xs font-semibold text-white'>{video.title || getFileName(video.url, `Film ${videos.length - index}`)}</p>
                       <p className='mt-1 truncate text-[11px] text-gray-400'>{video.festivalTitle || `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`}</p>
                       <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
-                        <span className='inline-flex items-center gap-1 rounded-full border border-emerald-300/15 bg-emerald-300/[0.06] px-2 py-0.5 text-[10px] font-medium text-emerald-200'>
+                        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                          video.submissionStatus === 'rejected'
+                            ? 'border-rose-300/15 bg-rose-300/[0.06] text-rose-200'
+                            : video.submissionStatus === 'approved'
+                              ? 'border-emerald-300/15 bg-emerald-300/[0.06] text-emerald-200'
+                              : 'border-cyan-300/15 bg-cyan-300/[0.06] text-cyan-200'
+                        }`}>
                           <CheckCircle2 size={11} />
                           {(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}
                         </span>
@@ -286,6 +304,31 @@ const DashboardOverview = () => {
             </div>
           )}
         </section>
+
+        {submissionUpdates.length > 0 && (
+          <section aria-label='Submission notifications' className='rounded-xl border border-cyan-300/20 bg-[#0b1115] p-4'>
+            <div className='flex items-center gap-2 border-b border-white/10 pb-3'>
+              <Bell size={17} className='text-cyan-300' />
+              <h2 className='text-sm font-semibold'>Submission notifications</h2>
+            </div>
+            <div className='divide-y divide-white/10'>
+              {submissionUpdates.map((video) => (
+                <article key={video.id} className='py-3 last:pb-0'>
+                  <p className={`text-xs font-semibold ${video.submissionStatus === 'approved' ? 'text-emerald-300' : 'text-rose-300'}`}>
+                    {video.submissionStatus === 'approved' ? 'Film approved' : 'Film not approved'}
+                  </p>
+                  <p className='mt-1 text-sm text-gray-200'>{video.title || `Film submission #${video.id}`}</p>
+                  {video.submissionStatus === 'rejected' && video.reviewReason && (
+                    <p className='mt-1 text-xs leading-5 text-gray-400'>Reason: {video.reviewReason}</p>
+                  )}
+                  <time className='mt-1 block text-[10px] text-gray-500' dateTime={video.reviewedAt}>
+                    {formatSubmissionDate(video.reviewedAt)}
+                  </time>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className='rounded-xl border border-white/10 bg-[#0b1115] p-4'>
           <h2 className='border-b border-white/10 pb-3 text-sm font-semibold'>Quick links</h2>

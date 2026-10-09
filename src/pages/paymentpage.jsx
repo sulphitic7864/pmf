@@ -312,7 +312,7 @@ const CheckoutPage = () => {
       <div className="relative mx-auto max-w-7xl">
         <header className="mb-8 border-b border-white/10 pb-6 sm:mb-10">
           <p className="text-xs font-semibold uppercase tracking-[0.26em] text-cyan-300">Place My Films</p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Complete your film submission</h1>
+          <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl capitalize">Complete your film submission</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/60 sm:text-base">
             Add your film and billing details, review your order, and securely complete your submission.
           </p>
@@ -356,7 +356,7 @@ const CheckoutPage = () => {
         <form className="space-y-5 rounded-xl border border-white/10 bg-[#0b1115] p-5 sm:p-6">
           <section className="space-y-4">
           <div className="border-b border-white/10 pb-3">
-            <h2 className="text-xl font-semibold sm:text-2xl">Film details</h2>
+            <h2 className="text-xl font-semibold sm:text-2xl capitalize">Film details</h2>
             <p className="mt-1 text-sm text-white/55">Tell us about the film you’re submitting.</p>
           </div>
           <label className="block text-sm font-medium text-white/80">Film Title
@@ -732,7 +732,7 @@ const CheckoutForm = ({
     >
       <div className="border-b border-white/10 pb-4">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300">Secure checkout</p>
-        <h2 className="mt-2 text-2xl font-semibold">Your order</h2>
+        <h2 className="mt-2 text-2xl font-semibold capitalize">Your order</h2>
       </div>
 
       <div className="rounded-lg border border-white/10 bg-[#10171b] px-4">
