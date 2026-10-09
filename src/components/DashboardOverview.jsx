@@ -36,6 +36,20 @@ const formatSubmissionDate = (date) => {
     : parsedDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
+const formatSubmissionDateTime = (date) => {
+  if (!date) return 'Date unavailable'
+  const parsedDate = new Date(date)
+  if (Number.isNaN(parsedDate.getTime())) return 'Date unavailable'
+
+  const formattedDate = formatSubmissionDate(parsedDate)
+  const formattedTime = parsedDate.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+  return `${formattedDate} · ${formattedTime}`
+}
+
 const getSubmissionTimestamp = (video) => {
   const date = video.createdAt || video.created_at || video.uploadedAt || video.uploaded_at
   const timestamp = date ? new Date(date).getTime() : Number.NaN
@@ -501,7 +515,7 @@ export const MessagesScreen = () => {
                         {rejected ? 'Film not approved' : 'Film approved'}
                       </h2>
                       <time className='text-xs text-gray-500' dateTime={video.reviewedAt}>
-                        {formatSubmissionDate(video.reviewedAt)}
+                        {formatSubmissionDateTime(video.reviewedAt)}
                       </time>
                     </div>
                     <p className='mt-1 text-sm text-white'>{title}</p>
