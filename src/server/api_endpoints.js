@@ -34,6 +34,7 @@ export const API_ENDPOINTS = {
     UPDATE_USER_DETAILS: (userId) => `${API_BASE_URL}/user/updateUserById/${userId}`,
     GET_PACKAGE_DETAILS: `${API_BASE_URL}/payapi/getPackageById`,
     GET_ALL_BLOGS: `${API_BASE_URL}/blog/getAllBlogs`,
+    GET_FILM_FESTIVAL_PAGE: `${API_BASE_URL}/payapi/film-festival-page`,
     GET_USER_VIDEOS: `${API_BASE_URL}/videosUpload/getByUserId`,
     MARK_REVIEW_NOTIFICATIONS_READ: `${API_BASE_URL}/videosUpload/review-notifications/read`,
     RECORD_VIDEO_VIEW: (videoId) => `${API_BASE_URL}/videosUpload/${videoId}/view`,
@@ -69,6 +70,11 @@ export const API_ENDPOINTS = {
     }
   };  
 
+export const getFilmFestivalPage = async () => {
+  const response = await API.get(API_ENDPOINTS.GET_FILM_FESTIVAL_PAGE);
+  return response.data;
+};
+
 
   
  export const getPackageById = async (id) => {
@@ -81,10 +87,12 @@ export const API_ENDPOINTS = {
 };  
 
 
-export const createpayment = async (requestBody, token) => {
+export const createpayment = async (requestBody, token, onUploadProgress) => {
   // eslint-disable-next-line no-useless-catch
   try {
     const res = await axios.post(`${API_BASE_URL}/payapi/store-payment-details`, requestBody, {
+      timeout: 0,
+      onUploadProgress,
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     return res.data;

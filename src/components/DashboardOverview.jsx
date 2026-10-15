@@ -192,7 +192,13 @@ const DashboardOverview = () => {
                     <div className='min-w-0'>
                       <p className='truncate text-sm font-semibold text-white'>{video.title || getFileName(video.url, `Film submission ${index + 1}`)}</p>
                       <p className='mt-1 line-clamp-2 text-xs leading-5 text-gray-500'>
-                        {video.festivalTitle || `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`}
+                        {video.festivalId ? (
+                          <span className='font-medium text-emerald-300'>
+                            Film Festival Entry{video.festivalTitle ? ` · ${video.festivalTitle}` : ''}
+                          </span>
+                        ) : (
+                          `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`
+                        )}
                       </p>
                     </div>
                   </div>
@@ -318,7 +324,7 @@ const DashboardOverview = () => {
                 <p className='mt-1 max-w-xl text-sm leading-6 text-gray-400'>Your upload space is ready. Choose a film package to add a video to your account.</p>
               </div>
             </div>
-            <Link to='/my-account/orders' className='inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-[#031015] transition-opacity hover:opacity-90 capitalize'>Manage uploads <ArrowRight size={16} /></Link>
+            <Link to='/my-account/submissions' className='inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-[#031015] transition-opacity hover:opacity-90 capitalize'> Uploads <ArrowRight size={16} /></Link>
           </div>
           <div className='mt-5 grid gap-3 border-t border-white/10 pt-5 sm:grid-cols-2'>
             <div className='rounded-lg border border-dashed border-white/15 bg-black/20 p-4'>
@@ -372,7 +378,11 @@ const DashboardOverview = () => {
                     )}
                     <div className='min-w-0 flex-1'>
                       <p className='truncate text-xs font-semibold text-white'>{video.title || getFileName(video.url, `Film ${videos.length - index}`)}</p>
-                      <p className='mt-1 truncate text-[11px] text-gray-400'>{video.festivalTitle || `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`}</p>
+                      <p className={`mt-1 truncate text-[11px] ${video.festivalId ? 'font-medium text-emerald-300' : 'text-gray-400'}`}>
+                        {video.festivalId
+                          ? `Film Festival Entry${video.festivalTitle ? ` · ${video.festivalTitle}` : ''}`
+                          : `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`}
+                      </p>
                       <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
                         <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${
                           video.submissionStatus === 'rejected'

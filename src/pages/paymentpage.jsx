@@ -617,7 +617,9 @@ const CheckoutForm = ({
   const elements = useElements();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingFilm, setUploadingFilm] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [uploadProgress, setUploadProgress] = useState({ percentage: 0, remainingSeconds: null });
   const { first_name } = paymentDetails;
 
   console.log("paymentDetails", userLoggedIn);
@@ -709,7 +711,22 @@ const CheckoutForm = ({
       }));
       submissionCriteria.forEach(({ field }) => submissionData.append(field, submissionFiles[field]));
 
-      const response = await createpayment(submissionData, localStorage.getItem("token"));
+      const uploadStartedAt = Date.now();
+      setUploadProgress({ percentage: 0, remainingSeconds: null });
+      setUploadingFilm(true);
+      const response = await createpayment(
+        submissionData,
+        localStorage.getItem("token"),
+        ({ loaded, total }) => {
+          if (!total) return;
+          const percentage = Math.min(100, Math.round((loaded / total) * 100));
+          const elapsedSeconds = (Date.now() - uploadStartedAt) / 1000;
+          const remainingSeconds = loaded > 0
+            ? Math.max(0, Math.ceil(((total - loaded) / loaded) * elapsedSeconds))
+            : null;
+          setUploadProgress({ percentage, remainingSeconds });
+        },
+      );
       if (!response.status) throw new Error(response.message || "Submission could not be saved.");
 
       if (response.result?.token) localStorage.setItem("token", response.result.token);
@@ -720,11 +737,17 @@ const CheckoutForm = ({
     } catch (err) {
       setErrorMessage(err.response?.data?.message || err.message || "Error processing payment. Please try again.");
     } finally {
+      setUploadingFilm(false);
       setIsSubmitting(false);
     }
   };
 
   console.log("discount",discount)
+  const formatRemainingTime = (seconds) => {
+    if (seconds === null) return "Calculating time remaining...";
+    if (seconds < 60) return `${seconds} sec remaining`;
+    return `${Math.floor(seconds / 60)} min ${seconds % 60} sec remaining`;
+  };
   return (
     <form
       onSubmit={handleSubmit}
@@ -807,6 +830,31 @@ const CheckoutForm = ({
       >
         {isSubmitting ? "Processing..." : "Submit"}
       </button>
+
+      {uploadingFilm && (
+        <div className="space-y-2 rounded-lg border border-cyan-300/20 bg-cyan-300/[0.05] px-4 py-3" aria-live="polite">
+          <div className="flex justify-between gap-3 text-sm text-white/80">
+            <span>{uploadProgress.percentage === 100 ? "Saving film submission..." : "Uploading film..."}</span>
+            <span>{uploadProgress.percentage}%</span>
+          </div>
+          <div
+            role="progressbar"
+            aria-label="Film upload progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={uploadProgress.percentage}
+            className="h-2 overflow-hidden rounded-full bg-white/10"
+          >
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-sky-400 to-[#00D0B8] transition-[width]"
+              style={{ width: `${uploadProgress.percentage}%` }}
+            />
+          </div>
+          {uploadProgress.percentage < 100 && (
+            <p className="text-xs text-white/50">{formatRemainingTime(uploadProgress.remainingSeconds)}</p>
+          )}
+        </div>
+      )}
 
       {errorMessage && <div role="alert" className="rounded-md border border-red-400/20 bg-red-400/10 p-3 text-sm text-red-200">{errorMessage}</div>}
     </form>

@@ -2,10 +2,21 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaCalendarAlt, FaCheck, FaFileAlt, FaLock, FaMoneyBillWave } from 'react-icons/fa'
 import { FaArrowRight } from 'react-icons/fa6'
-import { getAllPackage } from '../server/api_endpoints'
+import { getAllPackage, getFilmFestivalPage } from '../server/api_endpoints'
 import contestBackground from '../assets/images/film-contest-bg.jfif'
 
 const ContestPage = () => {
+  const [festivalPage, setFestivalPage] = useState({
+    heading: 'FILM CONTEST',
+    description: 'Share your story with the world. Our film contest connects talented filmmakers with industry opportunities.',
+    entryFee: '299.00',
+    deadline: 'March 31, 2026',
+    benefits: [
+      'Get your film in front of industry professionals',
+      'Gain exposure and new opportunities',
+      'Be part of a global community of filmmakers',
+    ],
+  })
   const [packages, setPackages] = useState([])
   const [packageError, setPackageError] = useState(false)
 
@@ -13,16 +24,26 @@ const ContestPage = () => {
     let isMounted = true
 
     const loadPackages = async () => {
-      try {
-        const response = await getAllPackage()
-        if (response instanceof Error) throw response
-        if (!Array.isArray(response?.result)) {
-          throw new Error('The package response did not contain a list of packages.')
+      const [packageResult, pageResult] = await Promise.allSettled([
+        getAllPackage(),
+        getFilmFestivalPage(),
+      ])
+      if (packageResult.status === 'fulfilled') {
+        const response = packageResult.value
+        if (!(response instanceof Error) && Array.isArray(response?.result)) {
+          if (isMounted) setPackages(response.result.filter((item) => item.status === 'Active'))
+        } else {
+          console.error('The package response did not contain a list of packages.')
+          if (isMounted) setPackageError(true)
         }
-        if (isMounted) setPackages(response.result)
-      } catch (error) {
-        console.error('Error fetching contest packages:', error)
+      } else {
+        console.error('Error fetching contest packages:', packageResult.reason)
         if (isMounted) setPackageError(true)
+      }
+      if (pageResult.status === 'fulfilled' && pageResult.value?.status && isMounted) {
+        setFestivalPage((current) => ({ ...current, ...pageResult.value.result }))
+      } else if (pageResult.status === 'rejected') {
+        console.error('Error fetching Film Festival page content:', pageResult.reason)
       }
     }
 
@@ -32,12 +53,9 @@ const ContestPage = () => {
     }
   }, [])
 
-  const contestPackage = packages.find((item) => Number(item.amount) === 25) ?? packages[0]
-  const entryFee = contestPackage
-    ? `$${Number(contestPackage.amount).toFixed(2)}`
-    : packageError
-      ? 'Unavailable'
-      : '...'
+  const entryFeeAmount = Number(festivalPage.entryFee)
+  const contestPackage = packages.find((item) => Number(item.amount) === entryFeeAmount)
+  const entryFee = Number.isFinite(entryFeeAmount) ? `$${entryFeeAmount.toFixed(2)}` : 'Unavailable'
 
   return (
     <main className='min-h-screen overflow-hidden bg-[#02090c] text-white'>
@@ -55,16 +73,13 @@ const ContestPage = () => {
               id='contest-heading'
               className='text-[clamp(3.8rem,10vw,6.5rem)] font-black leading-[0.84] tracking-[-0.065em]'
             >
-              <span className='block'>FILM</span>
+              <span className='block'>{festivalPage.heading.split(/\s+/).slice(0, 1).join(' ')}</span>
               <span className='block bg-gradient-to-r from-[#18b9ff] to-[#00e2b4] bg-clip-text text-transparent'>
-                CONTEST
+                {festivalPage.heading.split(/\s+/).slice(1).join(' ')}
               </span>
             </h1>
-            <p className='mt-6 text-xs font-medium uppercase tracking-[0.34em] text-white/85 sm:text-sm'>
-              Submit. Compete. Get discovered.
-            </p>
             <p className='mt-6 max-w-[510px] text-base leading-relaxed text-white/85 sm:text-lg'>
-              Share your story with the world. Our film contest connects talented filmmakers with industry opportunities.
+              {festivalPage.description}
             </p>
             {contestPackage ? (
               <Link
@@ -85,9 +100,11 @@ const ContestPage = () => {
                 <FaArrowRight aria-hidden='true' />
               </button>
             )}
-            {packageError && (
+            {(packageError || (!contestPackage && packages.length > 0)) && (
               <p role='status' className='mt-3 text-sm text-rose-300'>
-                Contest entry details could not be loaded. Please try again later.
+                {packageError
+                  ? 'Contest entry details could not be loaded. Please try again later.'
+                  : 'No active festival package matches the current entry fee.'}
               </p>
             )}
           </div>
@@ -110,7 +127,7 @@ const ContestPage = () => {
           <div className='flex min-h-[166px] flex-col items-center justify-center border-y border-[#12313a] px-5 py-6 text-center md:border-x md:border-y-0'>
             <FaCalendarAlt className='mb-4 text-[2.3rem] text-[#14c6f4]' aria-hidden='true' />
             <h2 className='text-sm font-bold uppercase text-white'>Submission Deadline</h2>
-            <p className='mt-3 text-xl font-bold text-[#00d6ad] sm:text-2xl'>March 31, 2026</p>
+            <p className='mt-3 text-xl font-bold text-[#00d6ad] sm:text-2xl'>{festivalPage.deadline}</p>
           </div>
 
           <div className='flex min-h-[166px] flex-col items-center justify-center px-5 py-6 text-center'>
@@ -127,24 +144,14 @@ const ContestPage = () => {
         <div>
           <h2 className='text-2xl font-extrabold uppercase tracking-tight sm:text-3xl'>Why Enter?</h2>
           <ul className='mt-6 space-y-4 text-base text-white/85 sm:text-lg'>
-            <li className='flex items-center gap-3'>
-              <span className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#08d8a8] text-[#00201b]'>
-                <FaCheck className='text-sm' aria-hidden='true' />
-              </span>
-              Get your film in front of industry professionals
-            </li>
-            <li className='flex items-center gap-3'>
-              <span className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#08d8a8] text-[#00201b]'>
-                <FaCheck className='text-sm' aria-hidden='true' />
-              </span>
-              Gain exposure and new opportunities
-            </li>
-            <li className='flex items-center gap-3'>
-              <span className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#08d8a8] text-[#00201b]'>
-                <FaCheck className='text-sm' aria-hidden='true' />
-              </span>
-              Be part of a global community of filmmakers
-            </li>
+            {festivalPage.benefits.map((benefit, index) => (
+              <li key={`${index}-${benefit}`} className='flex items-center gap-3'>
+                <span className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#08d8a8] text-[#00201b]'>
+                  <FaCheck className='text-sm' aria-hidden='true' />
+                </span>
+                {benefit}
+              </li>
+            ))}
           </ul>
         </div>
 

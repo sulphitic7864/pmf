@@ -12,6 +12,7 @@ const OrderContent = () => {
   const [userID, setUserID] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ percentage: 0, remainingSeconds: null });
   const [showModal, setShowModal] = useState(false);
   const [submissionFiles, setSubmissionFiles] = useState({});
   const [fileErrors, setFileErrors] = useState({});
@@ -121,6 +122,7 @@ const OrderContent = () => {
     setSubmissionFiles({});
     setFileErrors({});
     setUploadSuccess(false);
+    setUploadProgress({ percentage: 0, remainingSeconds: null });
     setShowModal(true);
   };
 
@@ -131,6 +133,7 @@ const OrderContent = () => {
     setCurrentPackageType(null);
     setFilmTitle('');
     setUploadSuccess(false);
+    setUploadProgress({ percentage: 0, remainingSeconds: null });
   };
 
   const handleSubmit = async () => {
@@ -150,6 +153,8 @@ const OrderContent = () => {
     }
 
     setUploadLoading(true);
+    setUploadProgress({ percentage: 0, remainingSeconds: null });
+    const uploadStartedAt = Date.now();
 
     try {
       const formData = new FormData();
@@ -158,6 +163,16 @@ const OrderContent = () => {
       submissionCriteria.forEach(({ field }) => formData.append(field, submissionFiles[field]));
 
       const response = await axios.post(API_ENDPOINTS.UPLOAD_VIDEO, formData, {
+        timeout: 0,
+        onUploadProgress: ({ loaded, total }) => {
+          if (!total) return;
+          const percentage = Math.min(100, Math.round((loaded / total) * 100));
+          const elapsedSeconds = (Date.now() - uploadStartedAt) / 1000;
+          const remainingSeconds = loaded > 0
+            ? Math.max(0, Math.ceil(((total - loaded) / loaded) * elapsedSeconds))
+            : null;
+          setUploadProgress({ percentage, remainingSeconds });
+        },
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -192,6 +207,12 @@ const OrderContent = () => {
     } finally {
       setUploadLoading(false);
     }
+  };
+
+  const formatRemainingTime = (seconds) => {
+    if (seconds === null) return 'Calculating time remaining...';
+    if (seconds < 60) return `${seconds} sec remaining`;
+    return `${Math.floor(seconds / 60)} min ${seconds % 60} sec remaining`;
   };
 
   if (loading) {
@@ -313,6 +334,31 @@ const OrderContent = () => {
                 <p role="status" className="rounded-lg border border-emerald-300/20 bg-emerald-300/[0.08] px-4 py-3 text-sm font-medium text-emerald-200">
                   All required items were validated and your film was uploaded successfully.
                 </p>
+              )}
+
+              {uploadLoading && (
+                <div className="space-y-2 rounded-lg border border-cyan-300/20 bg-cyan-300/[0.05] px-4 py-3" aria-live="polite">
+                  <div className="flex justify-between gap-3 text-sm text-gray-200">
+                    <span>{uploadProgress.percentage === 100 ? 'Saving submission...' : 'Uploading film...'}</span>
+                    <span>{uploadProgress.percentage}%</span>
+                  </div>
+                  <div
+                    role="progressbar"
+                    aria-label="Film upload progress"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={uploadProgress.percentage}
+                    className="h-2 overflow-hidden rounded-full bg-white/10"
+                  >
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-sky-400 to-[#00D0B8] transition-[width]"
+                      style={{ width: `${uploadProgress.percentage}%` }}
+                    />
+                  </div>
+                  {uploadProgress.percentage < 100 && (
+                    <p className="text-xs text-gray-400">{formatRemainingTime(uploadProgress.remainingSeconds)}</p>
+                  )}
+                </div>
               )}
 
               <div className="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.04] px-4 py-3 text-sm text-gray-300">
