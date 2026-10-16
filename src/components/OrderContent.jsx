@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { API_ENDPOINTS } from '../server/api_endpoints';
+import { API_ENDPOINTS, uploadFilmInChunks } from '../server/api_endpoints';
 import { jwtDecode } from 'jwt-decode';
 import { FaCloudUploadAlt, FaTrash } from 'react-icons/fa';
 import { CgClose } from 'react-icons/cg';
@@ -160,10 +160,15 @@ const OrderContent = () => {
       const formData = new FormData();
       formData.append("packageType", currentPackageType);
       formData.append("title", filmTitle.trim());
-      submissionCriteria.forEach(({ field }) => formData.append(field, submissionFiles[field]));
+      submissionCriteria
+        .filter(({ field }) => field !== "video")
+        .forEach(({ field }) => formData.append(field, submissionFiles[field]));
 
-      const response = await axios.post(API_ENDPOINTS.UPLOAD_VIDEO, formData, {
-        timeout: 0,
+      const response = await uploadFilmInChunks({
+        file: submissionFiles.video,
+        formData,
+        finalizeUrl: API_ENDPOINTS.UPLOAD_VIDEO,
+        token,
         onUploadProgress: ({ loaded, total }) => {
           if (!total) return;
           const percentage = Math.min(100, Math.round((loaded / total) * 100));
@@ -176,7 +181,7 @@ const OrderContent = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (response.data.response_code === 200 || response.data.status === true) {
+      if (response.response_code === 200 || response.status === true) {
         toast.success("✅ File uploaded successfully!", {
           position: "top-right",
           autoClose: 3000,
@@ -192,7 +197,7 @@ const OrderContent = () => {
           });
         }
       } else {
-        throw new Error(response.data.message || "The server did not confirm the video upload.");
+        throw new Error(response.message || "The server did not confirm the video upload.");
       }
     } catch (error) {
       console.error("Error:", error);

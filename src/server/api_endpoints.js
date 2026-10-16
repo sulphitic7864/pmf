@@ -30,6 +30,9 @@ export const API_ENDPOINTS = {
     CONFIRM_OTP: `${API_BASE_URL}/user/validateOtp`,
     RECOVER_PASSWORD: `${API_BASE_URL}/user/resetPasswordByUsernameOrEmail`,
     UPLOAD_VIDEO: `${API_BASE_URL}/videosUpload/upload`,
+    FILM_UPLOAD_SESSIONS: `${API_BASE_URL}/film-uploads`,
+    FILM_UPLOAD_SESSION: (uploadId) => `${API_BASE_URL}/film-uploads/${uploadId}`,
+    FILM_UPLOAD_CHUNK: (uploadId, chunkIndex) => `${API_BASE_URL}/film-uploads/${uploadId}/chunks/${chunkIndex}`,
     GET_USER_DETAILS: (userId) => `${API_BASE_URL}/user/getUserById/${userId}`,
     UPDATE_USER_DETAILS: (userId) => `${API_BASE_URL}/user/updateUserById/${userId}`,
     GET_PACKAGE_DETAILS: `${API_BASE_URL}/payapi/getPackageById`,
@@ -87,7 +90,7 @@ export const getFilmFestivalPage = async () => {
 };  
 
 
-export const createpayment = async (requestBody, token, onUploadProgress) => {
+export const createpaymentLegacy = async (requestBody, token, onUploadProgress) => {
   // eslint-disable-next-line no-useless-catch
   try {
     const res = await axios.post(`${API_BASE_URL}/payapi/store-payment-details`, requestBody, {
@@ -99,6 +102,169 @@ export const createpayment = async (requestBody, token, onUploadProgress) => {
   } catch (error) {
     throw error;
   }
+};
+
+export const uploadFilmInChunks = async ({
+  file,
+  formData,
+  finalizeUrl,
+  token,
+  onUploadProgress,
+}) => {
+  const resumeKey = `pmf-film-upload:${finalizeUrl}:${file.name}:${file.size}:${file.lastModified}`;
+  let uploadId;
+  let chunkSize;
+  let totalChunks;
+  let receivedChunks = new Set();
+  try {
+    uploadId = sessionStorage.getItem(resumeKey);
+  } catch (error) {
+    console.error("Film upload resume state could not be read:", error);
+  }
+
+  if (uploadId) {
+    try {
+      const progressResponse = await axios.get(API_ENDPOINTS.FILM_UPLOAD_SESSION(uploadId));
+      const progress = progressResponse.data?.result;
+      const manifest = progress?.manifest;
+      if (
+        !progressResponse.data?.status ||
+        manifest?.fileSize !== file.size ||
+        manifest?.fileName !== file.name ||
+        !manifest?.chunkSize ||
+        !manifest?.totalChunks
+      ) {
+        uploadId = null;
+      } else {
+        chunkSize = manifest.chunkSize;
+        totalChunks = manifest.totalChunks;
+        receivedChunks = new Set(progress.receivedChunks || []);
+      }
+    } catch (error) {
+      if (![404, 410].includes(error.response?.status)) throw error;
+      uploadId = null;
+      try {
+        sessionStorage.removeItem(resumeKey);
+      } catch (storageError) {
+        console.error("Expired film upload resume state could not be removed:", storageError);
+      }
+    }
+  }
+
+  if (!uploadId) {
+    const sessionResponse = await axios.post(
+      API_ENDPOINTS.FILM_UPLOAD_SESSIONS,
+      { fileName: file.name, fileSize: file.size },
+      { timeout: 30000 },
+    );
+    const session = sessionResponse.data?.result;
+    uploadId = sessionResponse.data?.status ? session?.uploadId : null;
+    chunkSize = session?.chunkSize;
+    totalChunks = session?.totalChunks;
+    if (!uploadId || !chunkSize || !totalChunks) {
+      throw new Error(sessionResponse.data?.message || "The film upload could not be started.");
+    }
+    try {
+      sessionStorage.setItem(resumeKey, uploadId);
+    } catch (error) {
+      console.error("Film upload resume state could not be saved:", error);
+    }
+  }
+
+  let uploadedBytes = [...receivedChunks].reduce((total, chunkIndex) => (
+    total + Math.min(chunkSize, file.size - chunkIndex * chunkSize)
+  ), 0);
+  onUploadProgress?.({ loaded: uploadedBytes, total: file.size });
+  for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
+    if (receivedChunks.has(chunkIndex)) continue;
+    const start = chunkIndex * chunkSize;
+    const chunk = file.slice(start, Math.min(start + chunkSize, file.size));
+    let uploaded = false;
+
+    for (let attempt = 0; attempt < 3 && !uploaded; attempt += 1) {
+      try {
+        await axios.put(
+          API_ENDPOINTS.FILM_UPLOAD_CHUNK(uploadId, chunkIndex),
+          chunk,
+          {
+            timeout: 0,
+            headers: { "Content-Type": "application/octet-stream" },
+            onUploadProgress: ({ loaded }) => {
+              onUploadProgress?.({
+                loaded: uploadedBytes + Math.min(loaded, chunk.size),
+                total: file.size,
+              });
+            },
+          },
+        );
+        uploaded = true;
+        uploadedBytes += chunk.size;
+        onUploadProgress?.({ loaded: uploadedBytes, total: file.size });
+      } catch (error) {
+        const canRetry = !error.response ||
+          error.response.status === 408 ||
+          error.response.status === 429 ||
+          error.response.status >= 500;
+        if (!canRetry || attempt === 2) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 500 * (2 ** attempt)));
+      }
+    }
+  }
+
+  formData.append("uploadId", uploadId);
+  let response;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      response = await axios.post(finalizeUrl, formData, {
+        timeout: 0,
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      break;
+    } catch (error) {
+      const canRetry = !error.response ||
+        error.response.status === 408 ||
+        error.response.status === 429 ||
+        error.response.status >= 500;
+      if (!canRetry || attempt === 2) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 500 * (2 ** attempt)));
+    }
+  }
+  if (!response.data?.status) {
+    throw new Error(response.data?.message || "The server did not confirm the film submission.");
+  }
+  onUploadProgress?.({ loaded: file.size, total: file.size });
+  try {
+    sessionStorage.removeItem(resumeKey);
+  } catch (error) {
+    console.error("Completed film upload resume state could not be removed:", error);
+  }
+
+  try {
+    await axios.delete(`${API_ENDPOINTS.FILM_UPLOAD_SESSIONS}/${uploadId}`);
+  } catch (error) {
+    console.error("Film submission completed, but temporary upload chunks could not be removed:", error);
+  }
+  return response.data;
+};
+
+export const createpayment = async (requestBody, token, onUploadProgress) => {
+  const videoFile = requestBody.get("video");
+  if (!(videoFile instanceof File)) {
+    throw new Error("A film video file is required to complete this submission.");
+  }
+
+  const submissionData = new FormData();
+  for (const [key, value] of requestBody.entries()) {
+    if (key !== "video") submissionData.append(key, value);
+  }
+
+  return uploadFilmInChunks({
+    file: videoFile,
+    formData: submissionData,
+    finalizeUrl: `${API_BASE_URL}/payapi/store-payment-details`,
+    token,
+    onUploadProgress,
+  });
 };
 
 
