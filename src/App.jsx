@@ -1,5 +1,6 @@
 import './App.css'
-import { BrowserRouter as Router,Routes,Route } from 'react-router-dom'
+import { BrowserRouter as Router,Routes,Route, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import Template from './components/Template'
 import Homepage from './pages/Homepage'
 import Aboutpage from './pages/Aboutpage'
@@ -16,11 +17,35 @@ import Specifications from './pages/Specifications'
 import Contestpage from './pages/Contestpage'
 import OnboardingCheckoutPage from './pages/OnboardingCheckoutPage'
 import SubmitFilmRoute from './pages/SubmitFilmRoute'
+import { SESSION_EXPIRED_EVENT } from './server/authSession'
+
+const SessionExpiryRedirect = () => {
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        const handleSessionExpired = (event) => {
+            navigate('/my-account/', {
+                replace: true,
+                state: {
+                    sessionExpired: true,
+                    returnTo: event.detail?.returnTo,
+                },
+            })
+        }
+
+        window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired)
+        return () => window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired)
+    }, [navigate])
+
+    return null
+}
+
 const App = () => {
   return (
 
     <CartProvider>
     <Router>
+        <SessionExpiryRedirect />
         <Routes>
             <Route path="/" element={<Template><Homepage/></Template>} />
             <Route path="/about" element={<Template><Aboutpage/></Template>} />

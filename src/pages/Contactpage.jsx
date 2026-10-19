@@ -6,13 +6,15 @@ import { jwtDecode } from 'jwt-decode';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { API_ENDPOINTS } from '../server/api_endpoints';
 
+const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+
 const initialContactData = {
     firstName: "",
     lastName: "",
     phoneNumber: "",
     countryCode: "LK", // Default country - Sri Lanka
     email: "",
-    message: ""
+    message: "" 
 };
 
 // Function to get formatted country list
@@ -126,7 +128,9 @@ const Contactpage = () => {
             isValid = false;
         }
         if (!recaptchaValue) {
-            error.recaptcha = "Please verify that you are not a robot";
+            error.recaptcha = recaptchaSiteKey
+                ? "Please verify that you are not a robot"
+                : "reCAPTCHA is not configured. Please try again later.";
             isValid = false;
         }
         setError(error);
@@ -161,8 +165,10 @@ const Contactpage = () => {
                     recaptchaRef.current?.reset();
                     setRecaptchaValue(null);
                 }
-            } catch {
-                toast.error('Something went wrong');
+            } catch (error) {
+                toast.error(error.response?.data?.message || 'Something went wrong');
+                recaptchaRef.current?.reset();
+                setRecaptchaValue(null);
             }
         }
     };
@@ -176,8 +182,8 @@ const Contactpage = () => {
                     </div>
                 </div>
                 <div className='w-full min-h-screen bg-black px-5 sm:px-10 md:px-28 lg:px-48 pt-8 pb-12'>
-                    <h1 className='text-3xl gradient-text font-semibold'>For a zoom meeting contact us here...!</h1>
-                    <p className='mt-5 mb-6 gradient-text'>Send us a message using our form below. We will get back to you within 24 hours. Thanks for visiting Place My Films!</p>
+                    {/* <h1 className='text-3xl gradient-text font-semibold'>For a zoom meeting contact us here...!</h1> */}
+                    <p className='mt-5 mb-6 gradient-text'>Send us a message using the form below, and we will respond within 24 hours.</p>
                     <form onSubmit={handleSubmit}>
                         <div className='w-full max-w-5xl flex flex-col gap-4 text-white'>
                             <div className='flex flex-col sm:flex-row gap-4 sm:gap-5'>
@@ -255,14 +261,18 @@ const Contactpage = () => {
                                 {error.message && <p className='text-red-500'>{error.message}</p>}
                             </div>
                             <div className='w-full'>
-                                <ReCAPTCHA
-                                    ref={recaptchaRef}
-                                    sitekey="6Lc2BtYqAAAAAOkDyJBuHrakKg2jdkgCW3nMg_Je"
-                                    onChange={handleRecaptchaChange}
-                                    onExpired={() => setRecaptchaValue(null)}
-                                    theme="dark"
-                                    useRecaptchaNet
-                                />
+                                {recaptchaSiteKey ? (
+                                    <ReCAPTCHA
+                                        ref={recaptchaRef}
+                                        sitekey={recaptchaSiteKey}
+                                        onChange={handleRecaptchaChange}
+                                        onExpired={() => setRecaptchaValue(null)}
+                                        theme="dark"
+                                        useRecaptchaNet
+                                    />
+                                ) : (
+                                    <p className='text-red-500'>reCAPTCHA is not configured. Please try again later.</p>
+                                )}
                                 {error.recaptcha && <p className='text-red-500'>{error.recaptcha}</p>}
                             </div>
                             <div className='w-full'>

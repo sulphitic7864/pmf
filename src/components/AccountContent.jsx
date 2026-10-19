@@ -14,6 +14,7 @@ const AccountContent = () => {
     newPassword: "",
     confirmNewPassword: "",
   });
+  const [changePasswordEnabled, setChangePasswordEnabled] = useState(false);
 
   const [error, setError] = useState({
     firstName: "",
@@ -64,12 +65,16 @@ const AccountContent = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setAccountDetails({ ...accountDetails, [name]: value });
-    setError({ ...error, [name]: "" });
+    setAccountDetails((current) => ({ ...current, [name]: value }));
+    setError((current) => ({ ...current, [name]: "" }));
   };
 
   const validate = () => {
-    let errors = {};
+    const errors = {
+      currentPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
+    };
     errors.firstName = accountDetails.firstName ? "" : "This field is required";
     errors.lastName = accountDetails.lastName ? "" : "This field is required";
     errors.displayName = accountDetails.displayName
@@ -80,27 +85,26 @@ const AccountContent = () => {
         ? ""
         : "Email is not valid"
       : "This field is required";
-    errors.newPassword =
-      accountDetails.currentPassword === ""
+    if (changePasswordEnabled) {
+      errors.currentPassword = accountDetails.currentPassword
         ? ""
-        : accountDetails.newPassword === ""
-        ? "This field is required"
-        : "";
-    errors.confirmNewPassword =
-      accountDetails.newPassword === "" ? "" : "This field is required";
-    errors.confirmNewPassword =
-      accountDetails.confirmNewPassword === accountDetails.newPassword
+        : "Enter your current password";
+      errors.newPassword = accountDetails.newPassword
         ? ""
-        : "Passwords do not match";
+        : "Enter a new password";
+      errors.confirmNewPassword = accountDetails.confirmNewPassword
+        ? accountDetails.confirmNewPassword === accountDetails.newPassword
+          ? ""
+          : "Passwords do not match"
+        : "Confirm your new password";
+    }
 
-    setError({ ...errors });
+    setError(errors);
     return Object.values(errors).every((x) => x === "");
   };
 
   const handleSubmit = async (e) => {
-    console.log("1111111");
     e.preventDefault();
-    console.log("1111111");
     if (validate()) {
       try {
         const requestBody = {
@@ -108,11 +112,14 @@ const AccountContent = () => {
           lastName: accountDetails.lastName,
           username: accountDetails.displayName,
           email: accountDetails.email,
-          currentPassword: accountDetails.currentPassword || "",
-          newPassword: accountDetails.newPassword || "",
+          ...(changePasswordEnabled
+            ? {
+                currentPassword: accountDetails.currentPassword,
+                newPassword: accountDetails.newPassword,
+              }
+            : {}),
         };
 
-        console.log(token);
         const response = await axios.put(
           API_ENDPOINTS.UPDATE_USER_DETAILS(userID),
           requestBody,
@@ -124,7 +131,6 @@ const AccountContent = () => {
           }
         );
 
-        console.log("response", response);
         if (response.status === 200) {
           toast.success("Account details updated successfully");
           setAccountDetails({
@@ -133,17 +139,17 @@ const AccountContent = () => {
             newPassword: "",
             confirmNewPassword: "",
           });
+          setChangePasswordEnabled(false);
         }
       } catch {
         toast.error("Failed to update account details. Please try again.");
-        console.log(accountDetails);
       }
     }
   };
 
   return (
     <div className="space-y-5 rounded-xl border border-white/10 bg-[#0b1115] p-4 sm:p-6">
-      <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+      <form className="flex flex-col gap-3" onSubmit={handleSubmit} autoComplete="off">
         <h1 className="mb-2 text-2xl font-semibold text-white">Account Settings</h1>
         <div className="flex w-full flex-col gap-3 sm:flex-row">
           <div className="flex w-full flex-col gap-2 sm:w-1/2">
@@ -151,6 +157,7 @@ const AccountContent = () => {
             <input
               name="firstName"
               type="text"
+              autoComplete="given-name"
               value={accountDetails.firstName}
               placeholder=""
               className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
@@ -165,6 +172,7 @@ const AccountContent = () => {
             <input
               name="lastName"
               type="text"
+              autoComplete="family-name"
               value={accountDetails.lastName}
               placeholder=""
               className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
@@ -179,6 +187,7 @@ const AccountContent = () => {
         <input
           name="displayName"
           type="text"
+          autoComplete="nickname"
           value={accountDetails.displayName}
           placeholder=""
           className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
@@ -196,50 +205,99 @@ const AccountContent = () => {
         <input
           name="email"
           type="email"
+          autoComplete="email"
           value={accountDetails.email}
           placeholder=""
           className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
           onChange={handleInputChange}
         />
         {error.email && <p className="text-red-500 text-sm">{error.email}</p>}
-        <h2 className="text-white text-2xl font-bold mt-5">Password change</h2>
-        <label className="text-white">
-          Current password
-        </label>
-        <input
-          name="currentPassword"
-          type="password"
-          value={accountDetails.currentPassword}
-          className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
-          onChange={handleInputChange}
-        />
-        {error.currentPassword && (
-          <p className="text-red-500 text-sm">{error.currentPassword}</p>
-        )}
-        <label className="text-white">
-          New password
-        </label>
-        <input
-          name="newPassword"
-          type="password"
-          value={accountDetails.newPassword}
-          className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
-          onChange={handleInputChange}
-        />
-        {error.newPassword && (
-          <p className="text-red-500 text-sm">{error.newPassword}</p>
-        )}
-        <label className="text-white">Confirm new password</label>
-        <input
-          name="confirmNewPassword"
-          type="password"
-          value={accountDetails.confirmNewPassword}
-          className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
-          onChange={handleInputChange}
-        />
-        {error.confirmNewPassword && (
-          <p className="text-red-500 text-sm">{error.confirmNewPassword}</p>
-        )}
+        <section className="mt-5 space-y-3 rounded-lg border border-white/10 p-4" aria-labelledby="password-change-heading">
+          <div>
+            <h2 id="password-change-heading" className="text-xl font-bold text-white">Password</h2>
+            <p className="mt-1 text-sm text-gray-400">
+              Your password stays unchanged when you update your account details.
+            </p>
+          </div>
+          <label className="flex cursor-pointer items-center gap-3 text-sm text-white">
+            <input
+              type="checkbox"
+              checked={changePasswordEnabled}
+              onChange={(event) => {
+                setChangePasswordEnabled(event.target.checked);
+                setAccountDetails((current) => ({
+                  ...current,
+                  currentPassword: "",
+                  newPassword: "",
+                  confirmNewPassword: "",
+                }));
+                setError((current) => ({
+                  ...current,
+                  currentPassword: "",
+                  newPassword: "",
+                  confirmNewPassword: "",
+                }));
+              }}
+              className="h-4 w-4 accent-cyan-400"
+            />
+            Change password
+          </label>
+          {changePasswordEnabled && (
+            <div className="space-y-3 border-t border-white/10 pt-3">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm text-white" htmlFor="currentPassword">
+                  Current password
+                </label>
+                <input
+                  id="currentPassword"
+                  name="currentPassword"
+                  type="password"
+                  autoComplete="current-password"
+                  value={accountDetails.currentPassword}
+                  className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                  onChange={handleInputChange}
+                />
+                {error.currentPassword && (
+                  <p className="text-sm text-red-500">{error.currentPassword}</p>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm text-white" htmlFor="newPassword">
+                  New password
+                </label>
+                <input
+                  id="newPassword"
+                  name="newPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={accountDetails.newPassword}
+                  className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                  onChange={handleInputChange}
+                />
+                {error.newPassword && (
+                  <p className="text-sm text-red-500">{error.newPassword}</p>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm text-white" htmlFor="confirmNewPassword">
+                  Confirm new password
+                </label>
+                <input
+                  id="confirmNewPassword"
+                  name="confirmNewPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={accountDetails.confirmNewPassword}
+                  className="w-full rounded-md border border-white/10 bg-[#242829] px-3 py-2.5 text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                  onChange={handleInputChange}
+                />
+                {error.confirmNewPassword && (
+                  <p className="text-sm text-red-500">{error.confirmNewPassword}</p>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
         <button
           type="submit"
           className="mt-3 w-full rounded-md bg-gradient-to-b from-sky-500 to-[#00D0B8] px-5 py-3 font-semibold text-white transition-opacity hover:opacity-90 sm:w-auto"

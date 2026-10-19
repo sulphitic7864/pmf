@@ -5,7 +5,7 @@ import dashboardBanner from '../assets/images/dashbaord_side_banner.png'
 
 const navigationContent = [
     { name: 'Dashboard', icon: House, link: '/my-account/' },
-    { name: 'New Submission', icon: UploadCloud, link: '/my-account/orders' },
+    { name: 'Add Submission', icon: UploadCloud, link: '/my-account/orders' },
     { name: 'My Submissions', icon: FileText, link: '/my-account/submissions' },
     { name: 'Messages', icon: Mail, link: '/my-account/messages' },
 ]

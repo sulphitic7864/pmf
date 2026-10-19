@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useState } from 'react';
 import { API_ENDPOINTS } from '../server/api_endpoints';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const initialLoginData = {loginemail: '', loginpassword: ''}
 const initialSignupData = {signupemail: '', username: '', firstName: '', lastName: ''}
@@ -17,6 +17,8 @@ const LoginAndSignUp = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+    const sessionExpired = location.state?.sessionExpired;
     
     const handleLoginChange = (e) => {
         setLoginData({ ...loginData, [e.target.id]: e.target.value });
@@ -68,7 +70,12 @@ const LoginAndSignUp = () => {
                 toast.success(response.data.message);
                 setLoginData(initialLoginData);
                 setTimeout(() => {
-                    navigate('/my-account/');
+                    const destination = location.state?.returnTo;
+                    navigate(
+                        typeof destination === 'string' && destination.startsWith('/') && !destination.startsWith('//')
+                            ? destination
+                            : '/my-account/',
+                    );
                 }, 3000);
             }
         } catch {
@@ -136,6 +143,12 @@ const LoginAndSignUp = () => {
                 <p className='mt-2 text-sm text-gray-400'>
                     {authMode === 'login' ? 'Log in to continue to your account.' : 'Join Place My Films to share your work.'}
                 </p>
+
+                {sessionExpired && (
+                    <div role='status' className='mt-5 rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100'>
+                        Your session has expired. Please log in again to continue. After signing in, we’ll return you to the page you were using.
+                    </div>
+                )}
 
                 <section className='mt-8 rounded-xl border border-white/10 bg-[#101314] p-5 shadow-xl shadow-black/30 sm:p-8'>
                     {authMode === 'login' ? (

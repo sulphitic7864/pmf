@@ -231,13 +231,13 @@ const OrderContent = () => {
   return (
     <>
       <div className="space-y-5 rounded-xl border border-white/10 bg-[#0b1115] p-4 sm:p-6">
-        <h1 className="text-2xl font-bold text-white">New Submission</h1>
+        <h1 className="text-2xl font-bold text-white">Add Submission</h1>
 
         {/* Free short-film submissions; festival entry payments happen separately. */}
         <div className="border-b border-white/10 pb-6">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <h2 className="text-xl font-semibold text-white">Short films</h2>
+              <h2 className="text-xl font-semibold text-white">Short Films</h2>
               <p className="text-sm text-gray-400">{videos99.length} submitted · Free submissions</p>
             </div>
             <button
@@ -247,11 +247,11 @@ const OrderContent = () => {
               Add Video
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          <div className="grid grid-cols-1 items-start gap-4 mt-4 md:grid-cols-2 lg:grid-cols-3">
             {videos99.length > 0 ? (
               videos99.map((video) => (
-                <div key={video.id} className="border p-2 rounded-md">
-                  <TrackedVideoPlayer video={video} className="w-full" onViewCountChange={updateViewCount} />
+                <div key={video.id} className="w-full min-w-0 self-start overflow-hidden rounded-md border p-2">
+                  <TrackedVideoPlayer video={video} className="block aspect-video max-h-64 w-full bg-black object-contain" onViewCountChange={updateViewCount} />
                 </div>
               ))
             ) : (
@@ -264,7 +264,7 @@ const OrderContent = () => {
         <div className="pt-4">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <h2 className="text-xl font-semibold text-white">Feature films</h2>
+              <h2 className="text-xl font-semibold text-white">Feature Films</h2>
               <p className="text-sm text-gray-400">{videos299.length} submitted · Free submissions</p>
             </div>
             <button
@@ -274,11 +274,11 @@ const OrderContent = () => {
               Add Video
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          <div className="grid grid-cols-1 items-start gap-4 mt-4 md:grid-cols-2 lg:grid-cols-3">
             {videos299.length > 0 ? (
               videos299.map((video) => (
-                <div key={video.id} className="border p-2 rounded-md">
-                  <TrackedVideoPlayer video={video} className="w-full" onViewCountChange={updateViewCount} />
+                <div key={video.id} className="w-full min-w-0 self-start overflow-hidden rounded-md border p-2">
+                  <TrackedVideoPlayer video={video} className="block aspect-video max-h-64 w-full bg-black object-contain" onViewCountChange={updateViewCount} />
                 </div>
               ))
             ) : (

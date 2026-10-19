@@ -11,6 +11,7 @@ const ContestPage = () => {
     description: 'Share your story with the world. Our film contest connects talented filmmakers with industry opportunities.',
     entryFee: '299.00',
     deadline: 'March 31, 2026',
+    eligibleGenres: 'Feature, Short, Documentary, Animation and More',
     benefits: [
       'Get your film in front of industry professionals',
       'Gain exposure and new opportunities',
@@ -134,7 +135,7 @@ const ContestPage = () => {
             <FaFileAlt className='mb-4 text-[2.3rem] text-[#14c6f4]' aria-hidden='true' />
             <h2 className='text-sm font-bold uppercase text-white'>Eligible Genres</h2>
             <p className='mt-3 max-w-[260px] text-sm leading-relaxed text-white/80'>
-              Feature, Short, Documentary, Animation and More
+              {festivalPage.eligibleGenres}
             </p>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { installUnauthorizedSessionHandler } from "./authSession";
 
 export const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
 
@@ -21,6 +22,12 @@ export const multipartAPI = axios.create({
       "Content-Type": "application/json",
     },
   });
+
+[
+  axios,
+  multipartAPI,
+  API,
+].forEach(installUnauthorizedSessionHandler);
 
 export const API_ENDPOINTS = {
     LOGIN: `${API_BASE_URL}/user/login`,
