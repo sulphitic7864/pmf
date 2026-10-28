@@ -17,7 +17,7 @@ export const cardDetails = [
     {
         image: images.upload,
         title: '1. upload',
-        text: "Upload your film for free."
+        text: "Upload your film."
     },
     {
         image: images.review,
