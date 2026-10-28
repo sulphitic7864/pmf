@@ -4,6 +4,7 @@ import OrderContent from './OrderContent';
 import AddressContent from './AddressContent';
 import PaymentContent from './PaymentContent';
 import AccountContent from './AccountContent';
+import TransactionContent from './TransactionContent';
 import Specifications from '../pages/Specifications';
 
 const DashboardComponents = () => {
@@ -27,6 +28,8 @@ const DashboardComponents = () => {
       return <PaymentContent />;
     case '/my-account/edit-account':
       return <AccountContent />;
+    case '/my-account/transactions':
+      return <TransactionContent />;
     default:
       return <h1>Page not found</h1>;
   }

@@ -3,16 +3,22 @@ import PropTypes from 'prop-types'
 import { CreditCard, FileText, House, LogOut, Mail, MapPin, PanelLeftClose, PanelLeftOpen, Settings, UploadCloud } from 'lucide-react'
 import dashboardBanner from '../assets/images/dashbaord_side_banner.png'
 
-const navigationContent = [
+const orderNavigation = (items) => {
+    const [dashboardItem, ...rest] = items;
+    return [dashboardItem, ...rest.sort((a, b) => a.name.localeCompare(b.name))];
+};
+
+const navigationContent = orderNavigation([
     { name: 'Dashboard', icon: House, link: '/my-account/' },
     { name: 'Add Submission', icon: UploadCloud, link: '/my-account/orders' },
-    { name: 'My Submissions', icon: FileText, link: '/my-account/submissions' },
     { name: 'Messages', icon: Mail, link: '/my-account/messages' },
-]
+    { name: 'My Submissions', icon: FileText, link: '/my-account/submissions' },
+])
 
 const accountContent = [
     { name: 'Account Settings', icon: Settings, link: '/my-account/edit-account' },
     { name: 'Billing Address', icon: MapPin, link: '/my-account/edit-address' },
+    { name: 'Transactions', icon: FileText, link: '/my-account/transactions' },
     { name: 'Payment History', icon: CreditCard, link: '/my-account/payment-methods' },
 ]
 

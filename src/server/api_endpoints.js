@@ -60,6 +60,8 @@ export const API_ENDPOINTS = {
     CREATE_BILLING: `${API_BASE_URL}/payapi/createBilling`,
     GET_PAYMENT_DETAILS_BY_USER: (userId) => `${API_BASE_URL}/payapi/payment-detailsbyuserid/${userId}`,
     GET_USER_PAYMENT_HISTORY: `${API_BASE_URL}/payapi/payment-history`,
+    GET_USER_VIEW_SUMMARY: `${API_BASE_URL}/user/view-summary`,
+    GET_USER_VIEW_TRANSACTIONS: `${API_BASE_URL}/user/view-transactions`,
     PAY_STRIPE: `${API_BASE_URL}/payapi/payStripe`,
     ONBOARDING_STATUS: `${API_BASE_URL}/payapi/onboarding/status`,
     ONBOARDING_PAYMENT_INTENT: `${API_BASE_URL}/payapi/onboarding/payment-intent`,
