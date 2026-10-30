@@ -182,7 +182,7 @@ const OrderContent = () => {
       });
 
       if (response.response_code === 200 || response.status === true) {
-        toast.success("✅ File uploaded successfully!", {
+        toast.success("File uploaded successfully!", {
           position: "top-right",
           autoClose: 3000,
         });
