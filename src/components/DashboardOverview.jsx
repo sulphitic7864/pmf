@@ -56,6 +56,26 @@ const getSubmissionTimestamp = (video) => {
   return Number.isNaN(timestamp) ? null : timestamp
 }
 
+const getKeyArtUrl = (video) => {
+  if (!video) return null
+
+  const submissionFiles = (() => {
+    if (!video.submissionFiles) return {}
+    if (typeof video.submissionFiles === 'string') {
+      try {
+        return JSON.parse(video.submissionFiles)
+      } catch {
+        return {}
+      }
+    }
+    return video.submissionFiles
+  })()
+
+  const preferredKeys = ['keyArtLandscape', 'keyArtPortrait', 'keyArtWide', 'keyArtFullHd']
+  const keyArtUrl = preferredKeys.map((key) => submissionFiles[key]).find(Boolean)
+  return keyArtUrl || null
+}
+
 export const RejectionReasonDialog = ({ selectedReason, onClose }) => {
   if (!selectedReason) return null
 
@@ -175,96 +195,109 @@ const DashboardOverview = () => {
         </header>
         <section className='overflow-hidden rounded-xl border border-white/10 bg-[#0b1115]'>
           <div className='flex items-center justify-between border-b border-white/10 px-5 py-4'>
-            <h2 className='font-semibold'>Uploaded files</h2>
+            <h2 className='font-semibold'>Uploaded Files</h2>
             <span className='text-sm text-gray-400'>{loading ? 'Loading...' : `${videos.length} files`}</span>
           </div>
           {loading ? (
             <div className='p-8 text-center text-sm text-gray-400'>Loading your submissions...</div>
           ) : videos.length ? (
             <div className='divide-y divide-white/10'>
-              {videos.map((video, index) => (
-                <div
-                  key={video.id || video.url || index}
-                  className='grid grid-cols-1 items-center gap-x-5 gap-y-4 px-5 py-5 lg:grid-cols-12'
-                >
-                  <div className='flex min-w-0 items-center gap-3 lg:col-span-3'>
-                    <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-400/10 text-cyan-300'><FileVideo2 size={20} /></span>
-                    <div className='min-w-0'>
-                      <p className='truncate text-sm font-semibold text-white'>{video.title || getFileName(video.url, `Film submission ${index + 1}`)}</p>
-                      <p className='mt-1 line-clamp-2 text-xs leading-5 text-gray-500'>
-                        {video.festivalId ? (
-                          <span className='font-medium text-emerald-300'>
-                            Film Festival Entry{video.festivalTitle ? ` · ${video.festivalTitle}` : ''}
-                          </span>
-                        ) : (
-                          `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`
-                        )}
-                      </p>
+              {videos.map((video, index) => {
+                const keyArtUrl = getKeyArtUrl(video)
+
+                return (
+                  <div
+                    key={video.id || video.url || keyArtUrl || index}
+                    className='grid grid-cols-1 items-center gap-x-5 gap-y-4 px-5 py-5 lg:grid-cols-12'
+                  >
+                    <div className='flex min-w-0 items-center gap-3 lg:col-span-3'>
+                      <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-400/10 text-cyan-300'><FileVideo2 size={20} /></span>
+                      <div className='min-w-0'>
+                        <p className='truncate text-sm font-semibold text-white'>{video.title || getFileName(video.url, `Film submission ${index + 1}`)}</p>
+                        <p className='mt-1 line-clamp-2 text-xs leading-5 text-gray-500'>
+                          {video.festivalId ? (
+                            <span className='font-medium text-emerald-300'>
+                              Film Festival Entry{video.festivalTitle ? ` · ${video.festivalTitle}` : ''}
+                            </span>
+                          ) : (
+                            `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`
+                          )}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  {video.url && (
-                    <div className='min-w-0 lg:col-span-3'>
-                      <TrackedVideoPlayer
-                        video={video}
-                        className='aspect-video w-full rounded-md'
-                        onViewCountChange={updateViewCount}
-                      />
-                    </div>
-                  )}
-                  {!video.url && <div className='hidden lg:col-span-3 lg:block' />}
-                  <div className='flex flex-wrap items-center gap-x-4 gap-y-2 lg:col-span-2 lg:flex-col lg:items-start lg:gap-2'>
-                    <span className='inline-flex items-center gap-1.5 text-xs text-cyan-200'>
-                      <Eye size={14} /> {Number(video.viewCount || 0)} views
-                    </span>
-                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${
-                      video.submissionStatus === 'rejected'
-                        ? 'border-rose-300/20 bg-rose-300/[0.06] text-rose-300'
-                        : video.submissionStatus === 'approved'
-                          ? 'border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300'
-                          : 'border-cyan-300/20 bg-cyan-300/[0.06] text-cyan-200'
-                    }`}>
-                      <CheckCircle2 size={14} />
-                      {(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}
-                    </span>
-                  </div>
-                  <div className='min-w-0 lg:col-span-3'>
-                    {video.submissionStatus === 'rejected' && video.reviewReason ? (
-                      <>
-                        <p className='text-xs font-semibold text-rose-300'>Reason</p>
-                        <button
-                          type='button'
-                          onClick={() => setSelectedReason({
-                            title: video.title || `Film submission #${video.id}`,
-                            reason: video.reviewReason,
-                          })}
-                          className='mt-1 line-clamp-2 w-full text-left text-sm leading-5 text-gray-300 hover:text-white'
-                          aria-label={`View full rejection reason for ${video.title || `film submission ${video.id}`}`}
-                        >
-                          {video.reviewReason}
-                        </button>
-                        <button
-                          type='button'
-                          onClick={() => setSelectedReason({
-                            title: video.title || `Film submission #${video.id}`,
-                            reason: video.reviewReason,
-                          })}
-                          className='mt-1 text-xs font-semibold text-cyan-300 hover:text-cyan-200'
-                        >
-                          View full reason
-                        </button>
-                      </>
+                    {video.url ? (
+                      <div className='min-w-0 lg:col-span-3'>
+                        <TrackedVideoPlayer
+                          video={video}
+                          className='aspect-video w-full rounded-md'
+                          onViewCountChange={updateViewCount}
+                        />
+                      </div>
+                    ) : keyArtUrl ? (
+                      <div className='min-w-0 lg:col-span-3'>
+                        <img
+                          src={keyArtUrl}
+                          alt={video.title || 'Submission key art'}
+                          className='aspect-video w-full rounded-md object-cover'
+                        />
+                      </div>
                     ) : (
-                      <p className='text-xs text-gray-600'>No review notes</p>
+                      <div className='hidden lg:col-span-3 lg:block' />
                     )}
+                    <div className='flex flex-wrap items-center gap-x-4 gap-y-2 lg:col-span-2 lg:flex-col lg:items-start lg:gap-2'>
+                      {/* <span className='inline-flex items-center gap-1.5 text-xs text-cyan-200'>
+                        <Eye size={14} /> {Number(video.viewCount || 0)} views
+                      </span> */}
+                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${
+                        video.submissionStatus === 'rejected'
+                          ? 'border-rose-300/20 bg-rose-300/[0.06] text-rose-300'
+                          : video.submissionStatus === 'approved'
+                            ? 'border-emerald-300/20 bg-emerald-300/[0.06] text-emerald-300'
+                            : 'border-cyan-300/20 bg-cyan-300/[0.06] text-cyan-200'
+                      }`}>
+                        <CheckCircle2 size={14} />
+                        {(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}
+                      </span>
+                    </div>
+                    <div className='min-w-0 lg:col-span-3'>
+                      {video.submissionStatus === 'rejected' && video.reviewReason ? (
+                        <>
+                          <p className='text-xs font-semibold text-rose-300'>Reason</p>
+                          <button
+                            type='button'
+                            onClick={() => setSelectedReason({
+                              title: video.title || `Film submission #${video.id}`,
+                              reason: video.reviewReason,
+                            })}
+                            className='mt-1 line-clamp-2 w-full text-left text-sm leading-5 text-gray-300 hover:text-white'
+                            aria-label={`View full rejection reason for ${video.title || `film submission ${video.id}`}`}
+                          >
+                            {video.reviewReason}
+                          </button>
+                          <button
+                            type='button'
+                            onClick={() => setSelectedReason({
+                              title: video.title || `Film submission #${video.id}`,
+                              reason: video.reviewReason,
+                            })}
+                            className='mt-1 text-xs font-semibold text-cyan-300 hover:text-cyan-200'
+                          >
+                            View full reason
+                          </button>
+                        </>
+                      ) : (
+                        <p className='text-xs text-gray-600'>No review notes</p>
+                      )}
+                    </div>
+                    <div className='text-xs text-gray-400 lg:col-span-1 lg:text-right'>
+                      <p>Submitted</p>
+                      <time className='mt-1 block whitespace-nowrap' dateTime={video.createdAt}>
+                        {formatSubmissionDate(video.createdAt)}
+                      </time>
+                    </div>
                   </div>
-                  <div className='text-xs text-gray-400 lg:col-span-1 lg:text-right'>
-                    <p>Submitted</p>
-                    <time className='mt-1 block whitespace-nowrap' dateTime={video.createdAt}>
-                      {formatSubmissionDate(video.createdAt)}
-                    </time>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div className='flex flex-col items-center px-6 py-14 text-center'>
@@ -354,63 +387,73 @@ const DashboardOverview = () => {
             <p className='py-6 text-center text-xs text-gray-500'>Loading uploads...</p>
           ) : recentVideos.length ? (
             <div className='space-y-2.5 pt-3'>
-              {recentVideos.map(({ video }, index) => (
-                <div
-                  key={video.id || video.url || index}
-                  className='group relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-br from-white/[0.045] to-white/[0.015] p-3 transition-colors hover:border-cyan-300/20 hover:from-cyan-300/[0.07]'
-                >
-                  <div aria-hidden='true' className='absolute inset-y-3 left-0 w-0.5 rounded-full bg-gradient-to-b from-sky-400 to-teal-300 opacity-70' />
-                  <div className='flex items-start gap-3 pl-1'>
-                    {video.url ? (
-                      <button
-                        type='button'
-                        aria-label={`${playingVideoUrl === video.url ? 'Close' : 'Play'} ${video.title || 'film submission'}`}
-                        aria-expanded={playingVideoUrl === video.url}
-                        onClick={() => setPlayingVideoUrl((activeUrl) => activeUrl === video.url ? null : video.url)}
-                        className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-300/[0.08] text-cyan-200 transition-colors hover:border-cyan-300/35 hover:bg-cyan-300/[0.13] focus:outline-none focus:ring-2 focus:ring-cyan-300'
-                      >
-                        <MonitorPlay size={18} />
-                      </button>
-                    ) : (
-                      <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-300/[0.08] text-cyan-200'>
-                        <MonitorPlay size={18} />
-                      </span>
-                    )}
-                    <div className='min-w-0 flex-1'>
-                      <p className='truncate text-xs font-semibold text-white'>{video.title || getFileName(video.url, `Film ${videos.length - index}`)}</p>
-                      <p className={`mt-1 truncate text-[11px] ${video.festivalId ? 'font-medium text-emerald-300' : 'text-gray-400'}`}>
-                        {video.festivalId
-                          ? `Film Festival Entry${video.festivalTitle ? ` · ${video.festivalTitle}` : ''}`
-                          : `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`}
-                      </p>
-                      <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
-                        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${
-                          video.submissionStatus === 'rejected'
-                            ? 'border-rose-300/15 bg-rose-300/[0.06] text-rose-200'
-                            : video.submissionStatus === 'approved'
-                              ? 'border-emerald-300/15 bg-emerald-300/[0.06] text-emerald-200'
-                              : 'border-cyan-300/15 bg-cyan-300/[0.06] text-cyan-200'
-                        }`}>
-                          <CheckCircle2 size={11} />
-                          {(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}
+              {recentVideos.map(({ video }, index) => {
+                const keyArtUrl = getKeyArtUrl(video)
+
+                return (
+                  <div
+                    key={video.id || video.url || keyArtUrl || index}
+                    className='group relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-br from-white/[0.045] to-white/[0.015] p-3 transition-colors hover:border-cyan-300/20 hover:from-cyan-300/[0.07]'
+                  >
+                    <div aria-hidden='true' className='absolute inset-y-3 left-0 w-0.5 rounded-full bg-gradient-to-b from-sky-400 to-teal-300 opacity-70' />
+                    <div className='flex items-start gap-3 pl-1'>
+                      {video.url ? (
+                        <button
+                          type='button'
+                          aria-label={`${playingVideoUrl === video.url ? 'Close' : 'Play'} ${video.title || 'film submission'}`}
+                          aria-expanded={playingVideoUrl === video.url}
+                          onClick={() => setPlayingVideoUrl((activeUrl) => activeUrl === video.url ? null : video.url)}
+                          className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-300/[0.08] text-cyan-200 transition-colors hover:border-cyan-300/35 hover:bg-cyan-300/[0.13] focus:outline-none focus:ring-2 focus:ring-cyan-300'
+                        >
+                          <MonitorPlay size={18} />
+                        </button>
+                      ) : keyArtUrl ? (
+                        <img
+                          src={keyArtUrl}
+                          alt={video.title || 'Submission key art'}
+                          className='h-10 w-10 shrink-0 rounded-xl object-cover'
+                        />
+                      ) : (
+                        <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-300/[0.08] text-cyan-200'>
+                          <MonitorPlay size={18} />
                         </span>
-                        <span className='inline-flex items-center gap-1 text-[10px] text-cyan-200'>
-                          <Eye size={11} /> {Number(video.viewCount || 0)} views
-                        </span>
+                      )}
+                      <div className='min-w-0 flex-1'>
+                        <p className='truncate text-xs font-semibold text-white'>{video.title || getFileName(video.url, `Film ${videos.length - index}`)}</p>
+                        <p className={`mt-1 truncate text-[11px] ${video.festivalId ? 'font-medium text-emerald-300' : 'text-gray-400'}`}>
+                          {video.festivalId
+                            ? `Film Festival Entry${video.festivalTitle ? ` · ${video.festivalTitle}` : ''}`
+                            : `Free ${video.packageType === '99' ? 'short-film' : 'feature-film'} submission`}
+                        </p>
+                        <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1'>
+                          <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                            video.submissionStatus === 'rejected'
+                              ? 'border-rose-300/15 bg-rose-300/[0.06] text-rose-200'
+                              : video.submissionStatus === 'approved'
+                                ? 'border-emerald-300/15 bg-emerald-300/[0.06] text-emerald-200'
+                                : 'border-cyan-300/15 bg-cyan-300/[0.06] text-cyan-200'
+                          }`}>
+                            <CheckCircle2 size={11} />
+                            {(video.submissionStatus || 'Submitted').replace(/^./, (letter) => letter.toUpperCase())}
+                          </span>
+                          {/* <span className='inline-flex items-center gap-1 text-[10px] text-cyan-200'>
+                            <Eye size={11} /> {Number(video.viewCount || 0)} views
+                          </span> */}
+                        <p className='mt-2 truncate text-[10px] text-gray-500'>{formatSubmissionDate(video.createdAt || video.created_at || video.uploadedAt || video.uploaded_at)}</p>
+                        </div>
                       </div>
-                      <p className='mt-2 truncate text-[10px] text-gray-500'>{formatSubmissionDate(video.createdAt || video.created_at || video.uploadedAt || video.uploaded_at)}</p>
                     </div>
+                    {video.url && playingVideoUrl === video.url && (
+                      <TrackedVideoPlayer
+                        video={video}
+                        autoPlay
+                        className='mt-3 aspect-video w-full rounded-lg bg-black'
+                        onViewCountChange={updateViewCount}
+                      />
+                    )}
                   </div>
-                  {video.url && playingVideoUrl === video.url && (
-                    <TrackedVideoPlayer
-                      video={video}
-                      autoPlay
-                      className='mt-3 aspect-video w-full rounded-lg bg-black'
-                      onViewCountChange={updateViewCount}
-                    />
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div className='py-7 text-center'>
